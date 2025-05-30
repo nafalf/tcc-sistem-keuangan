@@ -115,7 +115,7 @@ function App() {
           }
         />
         <Route
-          path="/transaction/:id/edit"
+          path="/edit/:id"
           element={
             <PrivateRoute>
               <EditTransaction />

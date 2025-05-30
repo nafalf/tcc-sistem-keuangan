@@ -3,7 +3,7 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import "./Transaction.css";
 import config from "../config";
-import { getCookie } from "../utils/cookieUtils";
+import { getCookie, setCookie } from "../utils/cookieUtils";
 
 const API_URL = config.API_URL;
 
@@ -20,47 +20,146 @@ const EditTransaction = () => {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const refreshAccessToken = async () => {
+    try {
+      const refreshToken = getCookie("refreshToken");
+      if (!refreshToken) {
+        throw new Error("No refresh token available");
+      }
+
+      const response = await axios.post(
+        `${API_URL}/api/user/refresh-token`,
+        { refreshToken },
+        { withCredentials: true }
+      );
+
+      if (response.data && response.data.accessToken) {
+        setCookie("accessToken", response.data.accessToken);
+        // Tunggu sebentar untuk memastikan cookie sudah diset
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        return response.data.accessToken;
+      }
+      throw new Error("Failed to refresh token");
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      navigate("/login");
+      return null;
+    }
+  };
+
+  const makeAuthenticatedRequest = async (requestFn) => {
+    try {
+      let token = getCookie("accessToken");
+      if (!token) {
+        token = await refreshAccessToken();
+        if (!token) return;
+      }
+
+      try {
+        return await requestFn(token);
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Token mungkin expired, coba refresh
+          const newToken = await refreshAccessToken();
+          if (newToken) {
+            // Tunggu sebentar untuk memastikan cookie sudah diset
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            return await requestFn(newToken);
+          }
+        }
+        throw error;
+      }
+    } catch (error) {
+      console.error("Request error:", error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
-    fetchTransaction();
-    fetchCategories();
+    const initializeData = async () => {
+      try {
+        setIsInitialized(false);
+        await fetchTransaction();
+        await fetchCategories();
+        setIsInitialized(true);
+      } catch (error) {
+        console.error("Error initializing data:", error);
+        if (error.response && error.response.status === 401) {
+          navigate("/login");
+        }
+      }
+    };
+
+    initializeData();
   }, [id]);
 
   const fetchTransaction = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/transaction/${id}`, {
-        headers: {
-          Authorization: `Bearer ${getCookie("accessToken")}`,
-        },
-      });
-      const transaction = response.data.data;
-      setFormData({
-        amount: transaction.amount,
-        description: transaction.description || "",
-        date: transaction.date.split("T")[0],
-        categoryId: transaction.categoryId,
-        type: transaction.type,
-      });
+      const response = await makeAuthenticatedRequest((token) =>
+        axios.get(`${API_URL}/api/transaction/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        })
+      );
+
+      if (response && response.data && response.data.data) {
+        const transaction = response.data.data;
+        setFormData({
+          amount: transaction.amount,
+          description: transaction.description || "",
+          date: transaction.date.split("T")[0],
+          categoryId: transaction.categoryId,
+          type: transaction.type,
+        });
+      } else {
+        setError("Data transaksi tidak valid");
+      }
     } catch (error) {
       console.error("Error fetching transaction:", error);
       if (error.response) {
         console.error("Error response data:", error.response.data);
+        if (error.response.status === 401) {
+          navigate("/login");
+        } else {
+          setError(error.response.data.msg || "Gagal memuat data transaksi");
+        }
+      } else {
+        setError("Gagal memuat data transaksi: " + error.message);
       }
-      setError("Gagal memuat data transaksi");
     }
   };
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/category`, {
-        headers: {
-          Authorization: `Bearer ${getCookie("accessToken")}`,
-        },
-      });
-      setCategories(response.data.data);
+      const response = await makeAuthenticatedRequest((token) =>
+        axios.get(`${API_URL}/api/category`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        })
+      );
+
+      if (response && response.data && response.data.data) {
+        setCategories(response.data.data);
+      } else {
+        setError("Data kategori tidak valid");
+      }
     } catch (error) {
       console.error("Error fetching categories:", error);
-      setError("Gagal memuat kategori");
+      if (error.response) {
+        if (error.response.status === 401) {
+          navigate("/login");
+        } else {
+          setError(error.response.data.msg || "Gagal memuat kategori");
+        }
+      } else {
+        setError("Gagal memuat kategori: " + error.message);
+      }
     }
   };
 
@@ -83,35 +182,46 @@ const EditTransaction = () => {
         amount: parseFloat(formData.amount),
       };
 
-      await axios.put(`${API_URL}/api/transaction/${id}`, transactionData, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getCookie("accessToken")}`,
-        },
-      });
+      const response = await makeAuthenticatedRequest((token) =>
+        axios.put(`${API_URL}/api/transaction/${id}`, transactionData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        })
+      );
 
-      console.log("Transaction updated successfully:", transactionData);
-      navigate("/dashboard");
+      if (response && response.data && response.data.status === "success") {
+        navigate("/dashboard");
+      } else {
+        setError("Gagal mengupdate transaksi");
+      }
     } catch (error) {
       console.error("Error updating transaction:", error);
       if (error.response) {
         console.error("Error response:", error.response.data);
-        setError(
-          error.response?.data?.msg ||
-            "Terjadi kesalahan saat mengupdate transaksi"
-        );
+        if (error.response.status === 401) {
+          navigate("/login");
+        } else {
+          setError(
+            error.response.data.msg ||
+              "Terjadi kesalahan saat mengupdate transaksi"
+          );
+        }
       } else if (error.request) {
-        console.error("Request error:", error.request);
-        setError("Tidak dapat terhubung ke server untuk mengupdate transaksi.");
+        setError("Tidak dapat terhubung ke server");
       } else {
-        setError(
-          `Terjadi kesalahan saat mengupdate transaksi: ${error.message}`
-        );
+        setError(`Terjadi kesalahan: ${error.message}`);
       }
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (!isInitialized) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="edit-transaction-container">
