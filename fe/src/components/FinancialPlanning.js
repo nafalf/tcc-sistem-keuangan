@@ -103,11 +103,22 @@ const FinancialPlanning = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewPlan((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  
+    // Khusus amount: pastikan hanya angka valid
+    if (name === "amount") {
+      const numericValue = value === "" ? "" : Math.max(0, parseInt(value, 10));
+      setNewPlan((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+    } else {
+      setNewPlan((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
+  
 
   const handleEdit = (plan) => {
     console.log("Editing plan:", plan);
@@ -281,9 +292,18 @@ const FinancialPlanning = () => {
                   name="amount"
                   value={newPlan.amount}
                   onChange={handleInputChange}
+                  onBlur={(e) => {
+                    if (e.target.value === "") return;
+                    const numericValue = Math.max(0, parseInt(e.target.value, 10));
+                    setNewPlan((prev) => ({
+                      ...prev,
+                      amount: numericValue,
+                    }));
+                  }}
                   required
                   min="0"
                 />
+
               </div>
               <div className="form-group">
                 <label>Deskripsi:</label>
