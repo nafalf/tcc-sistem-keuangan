@@ -15,6 +15,18 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Daftar kategori default
+const defaultCategories = [
+  { name: "Hiburan", type: "expense" },
+  { name: "Makanan", type: "expense" },
+  { name: "Transportasi", type: "expense" },
+  { name: "Investasi", type: "expense" },
+  { name: "Gaji", type: "income" },
+  { name: "Hadiah", type: "income" },
+  { name: "Pakaian", type: "expense" },
+  { name: "Kesehatan", type: "expense" },
+];
+
 export const UserController = {
   register: async (req, res) => {
     try {
@@ -40,6 +52,14 @@ export const UserController = {
         gender,
         password: hashedPassword,
       });
+
+      // Tambahkan kategori default untuk user baru
+      for (const category of defaultCategories) {
+        await Category.create({
+          name: category.name,
+          userId: user.id,
+        });
+      }
 
       res.status(201).json({
         status: "success",
@@ -268,7 +288,9 @@ export const UserController = {
       //    Jika kategori bersifat user-specific dan memiliki foreign key ke user dengan nama kolom lain,
       //    baris ini perlu disesuaikan. Untuk saat ini, kita asumsikan kategori bersifat global atau
       //    tidak dihapus bersama user.
-      console.log(`Skipping category deletion as 'userId' column is not present in categories table.`);
+      console.log(
+        `Skipping category deletion as 'userId' column is not present in categories table.`
+      );
 
       // 4. Hapus User
       const user = await User.findByPk(userId);
