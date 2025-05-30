@@ -1,0 +1,55 @@
+steps:
+  # Step 1: Install dependencies jika belum ada
+  - name: "gcr.io/cloud-builders/npm"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        if [ ! -d "node_modules" ]; then
+          echo "Installing dependencies..."
+          npm ci
+        else
+          echo "Skipping npm install, node_modules exists."
+        fi
+    dir: "fe"
+    volumes:
+      - name: "npm-cache"
+        path: /root/.npm
+
+  # Step 2: Build frontend React
+  - name: "gcr.io/cloud-builders/npm"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        npm run build
+    dir: "fe"
+    volumes:
+      - name: "npm-cache"
+        path: /root/.npm
+
+  # Step 3: Hapus versi lama App Engine yang tidak menerima trafik
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        echo "Menghapus versi App Engine yang tidak menerima trafik, menyisakan 200 terbaru..."
+        gcloud app versions list \
+          --filter="TRAFFIC_SPLIT=0.00" \
+          --sort-by="~VERSION.ID" \
+          --format="value(VERSION.ID, SERVICE)" \
+        | tail -n +201 \
+        | while read VERSION SERVICE; do
+            echo "Menghapus versi $$VERSION dari service $$SERVICE"
+            gcloud app versions delete "$$VERSION" --service="$$SERVICE" --quiet
+          done
+
+  # Step 4: Deploy ke App Engine
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args: ["app", "deploy", "--quiet"]
+    dir: "fe"
+
+options:
+  logging: CLOUD_LOGGING_ONLY

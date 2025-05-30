@@ -1,0 +1,16 @@
+runtime: nodejs20
+service: "fe-projek-akhir"
+instance_class: F1
+
+handlers:
+  # Untuk file static seperti JS, CSS, gambar, dll.
+  - url: /(.*\.(js|css|png|jpg|ico|svg|json|woff2?))
+    static_files: build/\1
+    upload: build/.*\.(js|css|png|jpg|ico|svg|json|woff2?)
+
+  # Untuk route lainnya (SPA), arahkan ke index.html
+  - url: /.*
+    static_files: build/index.html
+    upload: build/index.html
+
+default_expiration: "1h"

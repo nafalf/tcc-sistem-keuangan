@@ -1,0 +1,108 @@
+/* Reset margin & padding */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Latar belakang full‑screen */
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #a1a8b3; /* abu‑abu soft */
+}
+
+/* Kotak form putih */
+.auth-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+/* Judul (h1) */
+.auth-card h1 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+  color: #333333;
+}
+
+/* Error message */
+.error-message {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Setiap field */
+.form-field {
+  margin-bottom: 18px;
+}
+
+/* Label */
+.form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333333;
+}
+
+/* Input text/email/password/select */
+.form-field input,
+.form-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #333333;
+  background: #fafafa;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: #4caf50;
+}
+
+/* Tombol utama (Login / Register) */
+.form-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4caf50;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  color: white;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.form-button:hover {
+  background-color: #45a049;
+}
+
+/* Footer link */
+.auth-footer {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.auth-footer a {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+} 
