@@ -15,10 +15,19 @@ const AddTransaction = ({ onTransactionAdded }) => {
     categoryId: "",
     type: "expense",
   });
+  const [amountInput, setAmountInput] = useState("");
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = getCookie("accessToken");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+  }, [navigate]);
 
   useEffect(() => {
     fetchCategories();
@@ -40,25 +49,29 @@ const AddTransaction = ({ onTransactionAdded }) => {
       setCategories(response.data.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
-      if (error.response) {
-        console.error("Response error:", error.response.data);
-        if (error.response.status === 401) {
-          navigate("/login");
-        } else {
-          setError(error.response.data.msg || "Gagal memuat kategori");
-        }
-      } else {
-        setError("Gagal memuat kategori: " + error.message);
+      if (error.response?.status === 401) {
+        navigate("/login");
+        return;
       }
+      setError(error.response?.data?.msg || "Gagal memuat kategori");
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "amount") {
+      setAmountInput(value);
+      const parsedValue = value === "" ? "" : parseFloat(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: parsedValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -75,7 +88,7 @@ const AddTransaction = ({ onTransactionAdded }) => {
 
       const transactionData = {
         ...formData,
-        amount: parseFloat(formData.amount),
+        amount: parseFloat(formData.amount)
       };
 
       await axios.post(`${API_URL}/api/transaction`, transactionData, {
@@ -91,21 +104,11 @@ const AddTransaction = ({ onTransactionAdded }) => {
       navigate("/dashboard");
     } catch (error) {
       console.error("Error adding transaction:", error);
-      if (error.response) {
-        console.error("Error response:", error.response.data);
-        if (error.response.status === 401) {
-          navigate("/login");
-        } else {
-          setError(
-            error.response.data.msg ||
-              "Terjadi kesalahan saat menambah transaksi"
-          );
-        }
-      } else if (error.request) {
-        setError("Tidak dapat terhubung ke server");
-      } else {
-        setError(`Terjadi kesalahan: ${error.message}`);
+      if (error.response?.status === 401) {
+        navigate("/login");
+        return;
       }
+      setError(error.response?.data?.msg || "Terjadi kesalahan saat menambah transaksi");
     } finally {
       setIsLoading(false);
     }
@@ -137,8 +140,19 @@ const AddTransaction = ({ onTransactionAdded }) => {
             type="number"
             id="amount"
             name="amount"
-            value={formData.amount}
+            value={amountInput}
             onChange={handleChange}
+            onBlur={(e) => {
+              const value = e.target.value;
+              if (value !== "") {
+                const formattedValue = parseFloat(value).toString();
+                setAmountInput(formattedValue);
+                setFormData(prev => ({
+                  ...prev,
+                  amount: parseFloat(formattedValue)
+                }));
+              }
+            }}
             required
             min="0"
             step="0.01"

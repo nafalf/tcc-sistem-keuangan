@@ -24,6 +24,16 @@ const EditTransaction = () => {
   const [error, setError] = useState("");
   const [transactionLoaded, setTransactionLoaded] = useState(false); // State baru
   const [formKey, setFormKey] = useState(0); // State baru untuk memaksa re-render form
+  const [amountInput, setAmountInput] = useState(""); // State baru untuk input amount
+
+  // Effect untuk cek token dan redirect jika tidak ada
+  useEffect(() => {
+    const token = getCookie("accessToken");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+  }, [navigate]);
 
   // Effect untuk fetch data transaksi spesifik
   useEffect(() => {
@@ -44,7 +54,8 @@ const EditTransaction = () => {
     try {
       const token = getCookie("accessToken");
       if (!token) {
-        throw new Error("Token tidak ditemukan");
+        navigate("/login");
+        return;
       }
       const response = await axios.get(`${API_URL}/api/transaction/${id}`, {
         headers: {
@@ -145,6 +156,7 @@ const EditTransaction = () => {
 
       console.log("Setting form data with values:", newFormData);
       setFormData(newFormData);
+      setAmountInput(newFormData.amount.toString()); // Set initial amount input
 
       // Log state formData setelah diset (meskipun async)
       console.log(
@@ -157,6 +169,10 @@ const EditTransaction = () => {
     } catch (err) {
       console.error("Error fetching transaction data:", err);
       // Menangani error response dari backend
+      if (err.response?.status === 401) {
+        navigate("/login");
+        return;
+      }
       if (err.response) {
         console.error("Error response data:", err.response.data);
         setError(err.response?.data?.msg || "Gagal memuat data transaksi.");
@@ -177,7 +193,10 @@ const EditTransaction = () => {
   const fetchCategories = async () => {
     try {
       const token = getCookie("accessToken");
-      if (!token) return; // Jangan fetch jika tidak ada token
+      if (!token) {
+        navigate("/login");
+        return;
+      }
       const response = await axios.get(`${API_URL}/api/category`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -195,6 +214,10 @@ const EditTransaction = () => {
     } catch (err) {
       console.error("Error fetching categories:", err);
       // Menangani error response
+      if (err.response?.status === 401) {
+        navigate("/login");
+        return;
+      }
       if (err.response) {
         console.error("Error response data (categories):", err.response.data);
         //setError(err.response?.data?.msg || "Gagal memuat kategori."); // Opsional
@@ -210,10 +233,21 @@ const EditTransaction = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "amount") {
+      // Update amountInput state untuk input
+      setAmountInput(value);
+      // Update formData dengan nilai yang sudah di-parse
+      const parsedValue = value === "" ? "" : parseFloat(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: parsedValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -224,7 +258,8 @@ const EditTransaction = () => {
     try {
       const token = getCookie("accessToken");
       if (!token) {
-        throw new Error("Token tidak ditemukan");
+        navigate("/login");
+        return;
       }
 
       // Konversi amount ke number
@@ -244,6 +279,10 @@ const EditTransaction = () => {
       navigate("/dashboard"); // Kembali ke dashboard setelah update
     } catch (err) {
       console.error("Error updating transaction:", err);
+      if (err.response?.status === 401) {
+        navigate("/login");
+        return;
+      }
       if (err.response) {
         console.error("Error response:", err.response.data);
         setError(
@@ -320,8 +359,20 @@ const EditTransaction = () => {
               type="number"
               id="amount"
               name="amount"
-              value={formData.amount} // Periksa nilai amount
+              value={amountInput}
               onChange={handleChange}
+              onBlur={(e) => {
+                // Format angka saat input kehilangan fokus
+                const value = e.target.value;
+                if (value !== "") {
+                  const formattedValue = parseFloat(value).toString();
+                  setAmountInput(formattedValue);
+                  setFormData(prev => ({
+                    ...prev,
+                    amount: parseFloat(formattedValue)
+                  }));
+                }
+              }}
               required
               min="0"
               step="0.01"
