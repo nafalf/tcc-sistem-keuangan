@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import defaultProfile from "./default-profile.png";
-import axios from "axios";
 import config from "../config";
+import { getCookie, removeCookie } from "../utils/cookieUtils";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const MAX_WIDTH = 800; // Maximum width for compressed image
@@ -29,7 +30,7 @@ const Profile = () => {
 
   const fetchUserData = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (!token) {
         navigate("/login");
         return;
@@ -171,7 +172,7 @@ const Profile = () => {
     }
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (!token) {
         throw new Error("Token tidak ditemukan");
       }
@@ -229,7 +230,7 @@ const Profile = () => {
       )
     ) {
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = getCookie("accessToken");
         if (!token) {
           throw new Error("Token tidak ditemukan");
         }
@@ -241,38 +242,22 @@ const Profile = () => {
         });
 
         if (response.data.status === "success") {
-          alert(response.data.message || "Akun berhasil dihapus."); // Tampilkan pesan sukses
-          localStorage.removeItem("accessToken");
+          alert(response.data.message || "Akun berhasil dihapus.");
+          removeCookie("accessToken");
+          removeCookie("refreshToken");
+          removeCookie("user");
           navigate("/login");
         } else {
-          // Ini kemungkinan tidak akan tercapai jika backend mengembalikan status error (non-2xx)
           const errorMessage = response.data.message || "Gagal menghapus akun.";
           setError(errorMessage);
-          alert(errorMessage); // Tampilkan pesan gagal dari respons non-error status
+          alert(errorMessage);
           throw new Error(errorMessage);
         }
       } catch (error) {
         console.error("Error deleting account:", error);
-        let errorMessageForAlert = "Terjadi kesalahan. Silakan coba lagi.";
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.message
-        ) {
-          errorMessageForAlert = error.response.data.message;
-          setError(errorMessageForAlert);
-        } else if (error.response) {
-          errorMessageForAlert =
-            "Gagal menghapus akun dari server. Silakan coba lagi.";
-          setError(errorMessageForAlert);
-        } else if (error.request) {
-          errorMessageForAlert =
-            "Tidak dapat terhubung ke server. Silakan coba lagi.";
-          setError(errorMessageForAlert);
-        } else {
-          setError(errorMessageForAlert);
-        }
-        alert(errorMessageForAlert); // Tampilkan pesan error
+        setError(
+          error.response?.data?.msg || "Terjadi kesalahan saat menghapus akun"
+        );
       }
     }
   };

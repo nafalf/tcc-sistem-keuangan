@@ -1,8 +1,9 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from "react-router-dom";
+import { getCookie } from "../utils/cookieUtils";
 
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('accessToken');
-  
+  const token = getCookie("accessToken");
+
   if (!token) {
     return <Navigate to="/login" />;
   }
@@ -10,4 +11,4 @@ const PrivateRoute = ({ children }) => {
   return children;
 };
 
-export default PrivateRoute; 
+export default PrivateRoute;

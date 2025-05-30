@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Categories.css";
 import config from "../config";
+import { getCookie } from "../utils/cookieUtils";
 
 const API_URL = config.API_URL;
 
@@ -24,7 +25,7 @@ const Categories = () => {
     try {
       const response = await axios.get(`${API_URL}/api/category`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
       });
       setCategories(response.data.data);
@@ -50,7 +51,7 @@ const Categories = () => {
     }
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (!token) {
         throw new Error("Token tidak ditemukan");
       }
@@ -98,7 +99,7 @@ const Categories = () => {
     }
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (!token) {
         throw new Error("Token tidak ditemukan");
       }
@@ -148,7 +149,7 @@ const Categories = () => {
       try {
         await axios.delete(`${API_URL}/api/category/${id}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${getCookie("accessToken")}`,
           },
         });
         setSuccess("Kategori berhasil dihapus");

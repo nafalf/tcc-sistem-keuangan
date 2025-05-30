@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import config from "../config";
+import { setCookie } from "../utils/cookieUtils";
 import "./Auth.css";
 
 const Login = () => {
@@ -37,9 +38,10 @@ const Login = () => {
         throw new Error("Token tidak ada di response");
       }
 
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-      localStorage.setItem(
+      // Set cookies instead of localStorage
+      setCookie("accessToken", data.accessToken);
+      setCookie("refreshToken", data.refreshToken);
+      setCookie(
         "user",
         JSON.stringify({
           id: data.id,

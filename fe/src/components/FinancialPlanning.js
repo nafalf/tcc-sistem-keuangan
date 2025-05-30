@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./FinancialPlanning.css";
 import config from "../config";
+import { getCookie } from "../utils/cookieUtils";
 
 const API_URL = config.API_URL;
 
@@ -33,7 +34,7 @@ const FinancialPlanning = () => {
     try {
       const response = await axios.get(`${API_URL}/api/plan`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
       });
       console.log("Fetching plans...");
@@ -49,7 +50,7 @@ const FinancialPlanning = () => {
     try {
       const response = await axios.get(`${API_URL}/api/category`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
       });
       console.log("Fetching categories...");
@@ -64,7 +65,7 @@ const FinancialPlanning = () => {
     try {
       const response = await axios.get(`${API_URL}/api/transaction`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
       });
       console.log("Fetching transactions...");
@@ -137,7 +138,7 @@ const FinancialPlanning = () => {
           planData,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+              Authorization: `Bearer ${getCookie("accessToken")}`,
             },
           }
         );
@@ -154,7 +155,7 @@ const FinancialPlanning = () => {
         console.log("Membuat plan baru dengan data:", planData);
         const response = await axios.post(`${API_URL}/api/plan`, planData, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${getCookie("accessToken")}`,
           },
         });
         console.log("Response create plan:", response.data);
@@ -194,7 +195,7 @@ const FinancialPlanning = () => {
         console.log("Deleting plan with id:", id);
         const response = await axios.delete(`${API_URL}/api/plan/${id}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${getCookie("accessToken")}`,
           },
         });
         console.log("Delete response:", response.data);

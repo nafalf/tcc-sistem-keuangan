@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./FinancialDetail.css";
 import config from "../config";
+import { getCookie } from "../utils/cookieUtils";
 
 const API_URL = config.API_URL;
 
@@ -31,7 +32,7 @@ const FinancialDetail = () => {
     try {
       const response = await axios.get(`${API_URL}/api/transaction`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
       });
       console.log("Data transaksi:", response.data); // Debug log

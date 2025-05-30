@@ -3,6 +3,7 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import "./Transaction.css";
 import config from "../config";
+import { getCookie } from "../utils/cookieUtils";
 
 const API_URL = config.API_URL;
 
@@ -29,7 +30,7 @@ const EditTransaction = () => {
     try {
       const response = await axios.get(`${API_URL}/api/transaction/${id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
       });
       const transaction = response.data.data;
@@ -53,16 +54,12 @@ const EditTransaction = () => {
     try {
       const response = await axios.get(`${API_URL}/api/category`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
       });
-      console.log("Categories response:", response.data);
       setCategories(response.data.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
-      if (error.response) {
-        console.error("Error response data (categories):", error.response.data);
-      }
       setError("Gagal memuat kategori");
     }
   };
@@ -81,30 +78,36 @@ const EditTransaction = () => {
     setIsLoading(true);
 
     try {
-      const amountInRupiah = parseInt(formData.amount);
+      const transactionData = {
+        ...formData,
+        amount: parseFloat(formData.amount),
+      };
 
-      const response = await axios.put(
-        `${API_URL}/api/transaction/${id}`,
-        {
-          ...formData,
-          amount: amountInRupiah,
+      await axios.put(`${API_URL}/api/transaction/${id}`, transactionData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      });
 
-      console.log("Transaction updated:", response.data);
+      console.log("Transaction updated successfully:", transactionData);
       navigate("/dashboard");
     } catch (error) {
       console.error("Error updating transaction:", error);
       if (error.response) {
-        console.error("Error response data:", error.response.data);
+        console.error("Error response:", error.response.data);
+        setError(
+          error.response?.data?.msg ||
+            "Terjadi kesalahan saat mengupdate transaksi"
+        );
+      } else if (error.request) {
+        console.error("Request error:", error.request);
+        setError("Tidak dapat terhubung ke server untuk mengupdate transaksi.");
+      } else {
+        setError(
+          `Terjadi kesalahan saat mengupdate transaksi: ${error.message}`
+        );
       }
-      setError(error.response?.data?.message || "Gagal memperbarui transaksi");
     } finally {
       setIsLoading(false);
     }

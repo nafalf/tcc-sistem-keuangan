@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import config from "../config";
+import { useNavigate } from "react-router-dom";
 import "./Transaction.css";
+import config from "../config";
+import { getCookie } from "../utils/cookieUtils";
+
+const API_URL = config.API_URL;
 
 const AddTransaction = ({ onTransactionAdded }) => {
   const [formData, setFormData] = useState({
     amount: "",
     description: "",
-    date: new Date().toISOString().split("T")[0],
+    date: "",
     categoryId: "",
-    type: "expense", // default value
+    type: "expense",
   });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
@@ -21,37 +26,29 @@ const AddTransaction = ({ onTransactionAdded }) => {
 
   const fetchCategories = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (!token) {
-        throw new Error("Token tidak ditemukan");
+        navigate("/login");
+        return;
       }
 
-      const response = await axios.get(`${config.API_URL}/api/category`, {
+      const response = await axios.get(`${API_URL}/api/category`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      console.log("Categories response:", response.data);
-
-      if (Array.isArray(response.data)) {
-        setCategories(response.data);
-      } else if (response.data && Array.isArray(response.data.data)) {
-        setCategories(response.data.data);
+      setCategories(response.data.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      if (error.response) {
+        console.error("Response error:", error.response.data);
+        if (error.response.status === 401) {
+          navigate("/login");
+        } else {
+          setError(error.response.data.msg || "Gagal memuat kategori");
+        }
       } else {
-        console.error("Format data kategori tidak valid:", response.data);
-        setError("Format data kategori tidak valid");
-      }
-    } catch (err) {
-      console.error("Error fetching categories:", err);
-      if (err.response) {
-        console.error("Response error:", err.response.data);
-        setError(err.response.data.msg || "Gagal memuat kategori");
-      } else if (err.request) {
-        console.error("Request error:", err.request);
-        setError("Tidak dapat terhubung ke server");
-      } else {
-        setError("Gagal memuat kategori");
+        setError("Gagal memuat kategori: " + error.message);
       }
     }
   };
@@ -70,48 +67,45 @@ const AddTransaction = ({ onTransactionAdded }) => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (!token) {
-        throw new Error("Token tidak ditemukan");
+        navigate("/login");
+        return;
       }
 
-      // Konversi amount ke number
       const transactionData = {
         ...formData,
         amount: parseFloat(formData.amount),
       };
 
-      const response = await axios.post(
-        `${config.API_URL}/api/transaction`,
-        transactionData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log("Transaction added:", response.data);
-
-      // Reset form
-      setFormData({
-        amount: "",
-        description: "",
-        date: new Date().toISOString().split("T")[0],
-        categoryId: "",
-        type: "expense",
+      await axios.post(`${API_URL}/api/transaction`, transactionData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      // Notify parent component
       if (onTransactionAdded) {
         onTransactionAdded();
       }
-    } catch (err) {
-      console.error("Error adding transaction:", err);
-      setError(
-        err.response?.data?.msg || "Terjadi kesalahan saat menambah transaksi"
-      );
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+        if (error.response.status === 401) {
+          navigate("/login");
+        } else {
+          setError(
+            error.response.data.msg ||
+              "Terjadi kesalahan saat menambah transaksi"
+          );
+        }
+      } else if (error.request) {
+        setError("Tidak dapat terhubung ke server");
+      } else {
+        setError(`Terjadi kesalahan: ${error.message}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -162,12 +156,11 @@ const AddTransaction = ({ onTransactionAdded }) => {
             required
           >
             <option value="">Pilih Kategori</option>
-            {Array.isArray(categories) &&
-              categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -191,19 +184,18 @@ const AddTransaction = ({ onTransactionAdded }) => {
             name="description"
             value={formData.description}
             onChange={handleChange}
-            placeholder="Tambahkan deskripsi transaksi (opsional)"
-            rows="3"
+            placeholder="Masukkan deskripsi transaksi"
           />
         </div>
 
         <div className="button-group">
-          <button type="submit" className="submit-button" disabled={isLoading}>
-            {isLoading ? "Menambahkan..." : "Tambah Transaksi"}
+          <button type="submit" className="btn-submit" disabled={isLoading}>
+            {isLoading ? "Menyimpan..." : "Simpan"}
           </button>
           <button
             type="button"
-            className="cancel-button"
-            onClick={() => onTransactionAdded()}
+            className="btn-cancel"
+            onClick={() => navigate("/dashboard")}
           >
             Batal
           </button>

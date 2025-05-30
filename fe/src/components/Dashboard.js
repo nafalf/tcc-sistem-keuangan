@@ -5,6 +5,7 @@ import AddTransaction from "./AddTransaction";
 import "./Dashboard.css";
 import defaultProfile from "./default-profile.png";
 import config from "../config";
+import { getCookie, removeCookie } from "../utils/cookieUtils";
 
 const API_URL = config.API_URL;
 
@@ -19,7 +20,7 @@ const Navbar = () => {
       try {
         const response = await fetch(`${API_URL}/api/user/me`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${getCookie("accessToken")}`,
           },
         });
         if (response.ok) {
@@ -32,9 +33,7 @@ const Navbar = () => {
               `${API_URL}/api/user/profile/photo`,
               {
                 headers: {
-                  Authorization: `Bearer ${localStorage.getItem(
-                    "accessToken"
-                  )}`,
+                  Authorization: `Bearer ${getCookie("accessToken")}`,
                 },
               }
             );
@@ -59,7 +58,9 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+    removeCookie("accessToken");
+    removeCookie("refreshToken");
+    removeCookie("user");
     navigate("/login");
   };
 
@@ -167,7 +168,7 @@ const Dashboard = () => {
     try {
       const response = await axios.get(`${API_URL}/api/transaction`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
       });
       console.log("Transactions response:", response.data);
@@ -184,7 +185,7 @@ const Dashboard = () => {
     try {
       const response = await axios.get(`${API_URL}/api/category`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
       });
       console.log("Categories response in Dashboard:", response.data);
@@ -199,7 +200,7 @@ const Dashboard = () => {
       try {
         await axios.delete(`${API_URL}/api/transaction/${id}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${getCookie("accessToken")}`,
           },
         });
         console.log("Transaction deleted successfully:", id);
