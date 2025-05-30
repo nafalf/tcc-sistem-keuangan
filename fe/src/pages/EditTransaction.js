@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import config from "../config";
+import { getCookie } from "../utils/cookieUtils";
 import "./EditTransaction.css";
 
 const API_URL =
   process.env.REACT_APP_API_URL ||
-  "https://projek-akhir-505940949397.us-central1.run.app";
+  "http://localhost:5000";
 
 const EditTransaction = () => {
   const { id } = useParams(); // Mengambil ID transaksi dari URL
@@ -41,7 +42,7 @@ const EditTransaction = () => {
     setError(""); // Reset error
     setTransactionLoaded(false); // Reset loaded state
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (!token) {
         throw new Error("Token tidak ditemukan");
       }
@@ -175,7 +176,7 @@ const EditTransaction = () => {
 
   const fetchCategories = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (!token) return; // Jangan fetch jika tidak ada token
       const response = await axios.get(`${API_URL}/api/category`, {
         headers: {
@@ -221,7 +222,7 @@ const EditTransaction = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = getCookie("accessToken");
       if (!token) {
         throw new Error("Token tidak ditemukan");
       }
