@@ -4,6 +4,7 @@ export const CategoryController = {
   create: async (req, res) => {
     try {
       const { name } = req.body;
+      const userId = req.user.userId; // Get userId from authenticated user
 
       // Validasi data
       if (!name) {
@@ -13,9 +14,9 @@ export const CategoryController = {
         });
       }
 
-      // Cek apakah kategori sudah ada
+      // Cek apakah kategori sudah ada untuk user ini
       const existingCategory = await Category.findOne({
-        where: { name },
+        where: { name, userId },
       });
 
       if (existingCategory) {
@@ -27,6 +28,7 @@ export const CategoryController = {
 
       const category = await Category.create({
         name,
+        userId,
       });
 
       res.status(201).json({
@@ -45,7 +47,9 @@ export const CategoryController = {
 
   getAll: async (req, res) => {
     try {
+      const userId = req.user.userId; // Get userId from authenticated user
       const categories = await Category.findAll({
+        where: { userId },
         order: [["name", "ASC"]],
       });
 
@@ -65,6 +69,7 @@ export const CategoryController = {
   getByType: async (req, res) => {
     try {
       const { type } = req.params;
+      const userId = req.user.userId; // Get userId from authenticated user
 
       if (!["income", "expense"].includes(type)) {
         return res.status(400).json({
@@ -74,7 +79,7 @@ export const CategoryController = {
       }
 
       const categories = await Category.findAll({
-        where: { type },
+        where: { type, userId },
         order: [["name", "ASC"]],
       });
 
@@ -95,8 +100,12 @@ export const CategoryController = {
     try {
       const { id } = req.params;
       const { name } = req.body;
+      const userId = req.user.userId; // Get userId from authenticated user
 
-      const category = await Category.findByPk(id);
+      const category = await Category.findOne({
+        where: { id, userId },
+      });
+
       if (!category) {
         return res.status(404).json({
           status: "error",
@@ -104,10 +113,10 @@ export const CategoryController = {
         });
       }
 
-      // Cek apakah nama kategori sudah ada
+      // Cek apakah nama kategori sudah ada untuk user ini
       if (name && name !== category.name) {
         const existingCategory = await Category.findOne({
-          where: { name },
+          where: { name, userId },
         });
 
         if (existingCategory) {
@@ -139,8 +148,12 @@ export const CategoryController = {
   delete: async (req, res) => {
     try {
       const { id } = req.params;
+      const userId = req.user.userId; // Get userId from authenticated user
 
-      const category = await Category.findByPk(id);
+      const category = await Category.findOne({
+        where: { id, userId },
+      });
+
       if (!category) {
         return res.status(404).json({
           status: "error",

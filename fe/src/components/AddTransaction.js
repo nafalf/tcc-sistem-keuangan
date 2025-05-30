@@ -209,7 +209,13 @@ const AddTransaction = ({ onTransactionAdded }) => {
           <button
             type="button"
             className="btn-cancel"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => {
+              if (onTransactionAdded) {
+                onTransactionAdded();
+              }
+              navigate("/dashboard");
+            }}
+            disabled={isLoading}
           >
             Batal
           </button>

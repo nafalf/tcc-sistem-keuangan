@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
+import User from "./User.js";
 
 const Category = sequelize.define(
   "Category",
@@ -13,6 +14,14 @@ const Category = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
+    }
   },
   {
     tableName: "categories",
@@ -21,5 +30,9 @@ const Category = sequelize.define(
     updatedAt: false,
   }
 );
+
+// Set up association
+Category.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Category, { foreignKey: 'userId' });
 
 export default Category;
