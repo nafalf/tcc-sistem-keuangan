@@ -104,7 +104,11 @@ const EditTransaction = (props) => {
   }, [formData.date]);
 
   useEffect(() => {
-    if (formData.amount !== undefined && formData.amount !== null && formData.amount !== "") {
+    if (
+      formData.amount !== undefined &&
+      formData.amount !== null &&
+      formData.amount !== ""
+    ) {
       setAmountInput(formData.amount.toString());
     }
   }, [formData.amount]);
@@ -180,10 +184,17 @@ const EditTransaction = (props) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "amount") {
-      setAmountInput(value);
+      // Hapus semua karakter non-digit kecuali titik desimal
+      const cleanValue = value.replace(/[^\d.]/g, "");
+      // Pastikan hanya ada satu titik desimal
+      const parts = cleanValue.split(".");
+      const formattedValue =
+        parts.length > 1 ? `${parts[0]}.${parts.slice(1).join("")}` : parts[0];
+
+      setAmountInput(formattedValue);
       setFormData((prev) => ({
         ...prev,
-        amount: value
+        [name]: formattedValue,
       }));
     } else {
       setFormData((prev) => ({
@@ -201,7 +212,7 @@ const EditTransaction = (props) => {
     try {
       const transactionData = {
         ...formData,
-        amount: parseFloat(amountInput),
+        amount: Math.round(parseFloat(amountInput) * 100) / 100,
       };
 
       const response = await makeAuthenticatedRequest((token) =>
@@ -304,7 +315,15 @@ const EditTransaction = (props) => {
 
         <div className="form-group">
           <label htmlFor="date">Tanggal</label>
-          <input type="date" id="date" name="date" value={formData.date} onChange={handleChange} required max={today} />
+          <input
+            type="date"
+            id="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            required
+            max={today}
+          />
         </div>
 
         <div className="form-group">
@@ -325,7 +344,9 @@ const EditTransaction = (props) => {
           <button
             type="button"
             className="btn-cancel"
-            onClick={() => props.onClose ? props.onClose() : navigate("/dashboard")}
+            onClick={() =>
+              props.onClose ? props.onClose() : navigate("/dashboard")
+            }
             disabled={isLoading}
           >
             Batal

@@ -66,16 +66,20 @@ const AddTransaction = ({ onTransactionAdded }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "amount") {
-      setAmountInput(value);
-      const parsedValue = value === "" ? "" : parseFloat(value);
-      setFormData(prev => ({
+      const cleanValue = value.replace(/[^\d.]/g, "");
+      const parts = cleanValue.split(".");
+      const formattedValue =
+        parts.length > 1 ? `${parts[0]}.${parts.slice(1).join("")}` : parts[0];
+
+      setAmountInput(formattedValue);
+      setFormData((prev) => ({
         ...prev,
-        [name]: parsedValue
+        [name]: formattedValue,
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
@@ -94,7 +98,7 @@ const AddTransaction = ({ onTransactionAdded }) => {
 
       const transactionData = {
         ...formData,
-        amount: parseFloat(formData.amount)
+        amount: Math.round(parseFloat(formData.amount) * 100) / 100,
       };
 
       await axios.post(`${API_URL}/api/transaction`, transactionData, {
@@ -114,7 +118,9 @@ const AddTransaction = ({ onTransactionAdded }) => {
         navigate("/login");
         return;
       }
-      setError(error.response?.data?.msg || "Terjadi kesalahan saat menambah transaksi");
+      setError(
+        error.response?.data?.msg || "Terjadi kesalahan saat menambah transaksi"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -153,9 +159,9 @@ const AddTransaction = ({ onTransactionAdded }) => {
               if (value !== "") {
                 const formattedValue = parseFloat(value).toString();
                 setAmountInput(formattedValue);
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
-                  amount: parseFloat(formattedValue)
+                  amount: parseFloat(formattedValue),
                 }));
               }
             }}
@@ -186,7 +192,15 @@ const AddTransaction = ({ onTransactionAdded }) => {
 
         <div className="form-group">
           <label htmlFor="date">Tanggal</label>
-          <input type="date" id="date" name="date" value={formData.date} onChange={handleChange} required max={today} />
+          <input
+            type="date"
+            id="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            required
+            max={today}
+          />
         </div>
 
         <div className="form-group">
