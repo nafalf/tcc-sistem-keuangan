@@ -35,7 +35,7 @@ app.use((req, res, next) => {
 
 // CORS configuration
 const allowedOrigins = [
-  "https://fe-projek-akhir-dot-b-08-450916.uc.r.appspot.com/",
+  "https://fe-projek-akhir-dot-b-08-450916.uc.r.appspot.com",
   "http://localhost:3000",
 ];
 

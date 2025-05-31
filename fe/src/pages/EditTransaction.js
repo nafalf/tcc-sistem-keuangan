@@ -5,8 +5,12 @@ import config from "../config";
 import { getCookie } from "../utils/cookieUtils";
 import "./EditTransaction.css";
 
+<<<<<<< HEAD
 const API_URL =
   process.env.REACT_APP_API_URL;
+=======
+const API_URL = config.API_URL;
+>>>>>>> 265ae985268000cc532d197ce8540735b7ae1c2c
 
 const EditTransaction = () => {
   const { id } = useParams(); // Mengambil ID transaksi dari URL
@@ -237,14 +241,14 @@ const EditTransaction = () => {
       setAmountInput(value);
       // Update formData dengan nilai yang sudah di-parse
       const parsedValue = value === "" ? "" : parseFloat(value);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: parsedValue
+        [name]: parsedValue,
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
@@ -366,9 +370,9 @@ const EditTransaction = () => {
                 if (value !== "") {
                   const formattedValue = parseFloat(value).toString();
                   setAmountInput(formattedValue);
-                  setFormData(prev => ({
+                  setFormData((prev) => ({
                     ...prev,
-                    amount: parseFloat(formattedValue)
+                    amount: parseFloat(formattedValue),
                   }));
                 }
               }}
