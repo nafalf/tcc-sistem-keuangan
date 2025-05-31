@@ -7,9 +7,10 @@ import { getCookie, setCookie } from "../utils/cookieUtils";
 
 const API_URL = config.API_URL;
 
-const EditTransaction = () => {
-  const { id } = useParams();
+const EditTransaction = (props) => {
+  const params = useParams();
   const navigate = useNavigate();
+  const id = props.id || params.id;
   const [formData, setFormData] = useState({
     amount: "",
     description: "",
@@ -17,6 +18,7 @@ const EditTransaction = () => {
     categoryId: "",
     type: "",
   });
+  const [amountInput, setAmountInput] = useState("");
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -101,6 +103,12 @@ const EditTransaction = () => {
     if (!formData.date) setFormData((prev) => ({ ...prev, date: today }));
   }, [formData.date]);
 
+  useEffect(() => {
+    if (formData.amount !== undefined && formData.amount !== null && formData.amount !== "") {
+      setAmountInput(formData.amount.toString());
+    }
+  }, [formData.amount]);
+
   const fetchTransaction = async () => {
     try {
       const response = await makeAuthenticatedRequest((token) =>
@@ -171,10 +179,18 @@ const EditTransaction = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "amount") {
+      setAmountInput(value);
+      setFormData((prev) => ({
+        ...prev,
+        amount: value
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -185,7 +201,7 @@ const EditTransaction = () => {
     try {
       const transactionData = {
         ...formData,
-        amount: parseFloat(formData.amount),
+        amount: parseFloat(amountInput),
       };
 
       const response = await makeAuthenticatedRequest((token) =>
@@ -199,7 +215,11 @@ const EditTransaction = () => {
       );
 
       if (response && response.data && response.data.status === "success") {
-        navigate("/dashboard");
+        if (props.onClose) {
+          props.onClose(); // Tutup form edit, dashboard akan tampilkan daftar transaksi
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         setError("Gagal mengupdate transaksi");
       }
@@ -230,7 +250,7 @@ const EditTransaction = () => {
   }
 
   return (
-    <div className="edit-transaction-container">
+    <div className="add-transaction-container">
       <h2>Edit Transaksi</h2>
       {error && <div className="error-message">{error}</div>}
 
@@ -255,7 +275,7 @@ const EditTransaction = () => {
             type="number"
             id="amount"
             name="amount"
-            value={formData.amount}
+            value={amountInput}
             onChange={handleChange}
             required
             min="0"
@@ -305,7 +325,8 @@ const EditTransaction = () => {
           <button
             type="button"
             className="btn-cancel"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => props.onClose ? props.onClose() : navigate("/dashboard")}
+            disabled={isLoading}
           >
             Batal
           </button>

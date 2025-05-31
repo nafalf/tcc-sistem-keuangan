@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AddTransaction from "./AddTransaction";
 import Sidebar from "./Sidebar";
 import "./Dashboard.css";
@@ -8,6 +8,7 @@ import defaultProfile from "./default-profile.png";
 import config from "../config";
 import { getCookie, removeCookie } from "../utils/cookieUtils";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import EditTransaction from "../components/EditTransaction";
 
 const API_URL = config.API_URL;
 
@@ -120,6 +121,7 @@ const Dashboard = () => {
     totalIncome: 0,
     totalExpense: 0,
   });
+  const [editId, setEditId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -251,6 +253,15 @@ const Dashboard = () => {
           {error && <div className="error-message">{error}</div>}
           {showAddForm ? (
             <AddTransaction onTransactionAdded={handleTransactionAdded} />
+          ) : editId ? (
+            <EditTransaction
+              key={editId}
+              id={editId}
+              onClose={() => {
+                setEditId(null);
+                fetchTransactions();
+              }}
+            />
           ) : (
             <>
               <button className="btn-add" style={{marginBottom: '2.5rem'}} onClick={() => setShowAddForm(true)}>
@@ -291,7 +302,7 @@ const Dashboard = () => {
                       </div>
                       <div>Deskripsi: {transaction.description || "-"}</div>
                       <div className="transaction-actions" style={{ justifyContent: 'flex-end', alignItems: 'flex-end', position: 'absolute', right: '1.2rem', bottom: '1.2rem' }}>
-                        <button className="icon-btn btn-edit" title="Edit" onClick={() => navigate(`/edit/${transaction.id}`)}><FaEdit /></button>
+                        <button className="icon-btn btn-edit" title="Edit" onClick={() => setEditId(transaction.id)}><FaEdit /></button>
                         <button className="icon-btn btn-delete" title="Hapus" onClick={() => handleDelete(transaction.id)}><FaTrash /></button>
                       </div>
                     </div>
