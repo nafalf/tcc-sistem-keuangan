@@ -35,7 +35,7 @@ app.use((req, res, next) => {
 
 // CORS configuration
 const allowedOrigins = [
-  "http://localhost:3000"
+  "https://fe-projek-akhir-dot-b-08-450916.uc.r.appspot.com/"
 ];
 
 app.use(cookieParser());
@@ -113,7 +113,7 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const HOST = "0.0.0.0";
 
 app.listen(PORT, HOST, () => {
