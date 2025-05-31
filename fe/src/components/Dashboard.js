@@ -12,7 +12,7 @@ import EditTransaction from "../components/EditTransaction";
 
 const API_URL = config.API_URL;
 
-const Navbar = ({searchQuery, setSearchQuery}) => {
+const Navbar = ({ searchQuery, setSearchQuery }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState(null);
@@ -73,7 +73,7 @@ const Navbar = ({searchQuery, setSearchQuery}) => {
           placeholder="Cari berdasarkan deskripsi, kategori, jumlah, atau tipe transaksi..."
           className="search-input-bar"
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
       {user && (
@@ -95,7 +95,10 @@ const Navbar = ({searchQuery, setSearchQuery}) => {
           </div>
           {isDropdownOpen && (
             <div className="dropdown-menu">
-              <button onClick={() => navigate('/profile')} className="dropdown-item">
+              <button
+                onClick={() => navigate("/profile")}
+                className="dropdown-item"
+              >
                 Profil Anda
               </button>
               <button onClick={handleLogout} className="dropdown-item">
@@ -232,21 +235,48 @@ const Dashboard = () => {
                 <p className="amount">
                   Rp {summary.totalIncome.toLocaleString("id-ID")}
                 </p>
-                <span className="summary-icon"><svg width="40" height="24" viewBox="0 0 40 24"><polyline points="0,24 10,18 20,20 30,10 40,14" fill="none" stroke="#281AC8" strokeWidth="2"/></svg></span>
+                <span className="summary-icon">
+                  <svg width="40" height="24" viewBox="0 0 40 24">
+                    <polyline
+                      points="0,24 10,18 20,20 30,10 40,14"
+                      fill="none"
+                      stroke="#281AC8"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </span>
               </div>
               <div className="summary-card total-balance">
                 <h3>Total Saldo</h3>
                 <p className="amount">
                   Rp {summary.totalBalance.toLocaleString("id-ID")}
                 </p>
-                <span className="summary-icon"><svg width="40" height="24" viewBox="0 0 40 24"><polyline points="0,20 10,12 20,16 30,6 40,10" fill="none" stroke="#281AC8" strokeWidth="2"/></svg></span>
+                <span className="summary-icon">
+                  <svg width="40" height="24" viewBox="0 0 40 24">
+                    <polyline
+                      points="0,20 10,12 20,16 30,6 40,10"
+                      fill="none"
+                      stroke="#281AC8"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </span>
               </div>
               <div className="summary-card expense">
                 <h3>Total Pengeluaran</h3>
                 <p className="amount">
                   Rp {summary.totalExpense.toLocaleString("id-ID")}
                 </p>
-                <span className="summary-icon"><svg width="40" height="24" viewBox="0 0 40 24"><polyline points="0,10 10,18 20,8 30,20 40,14" fill="none" stroke="#281AC8" strokeWidth="2"/></svg></span>
+                <span className="summary-icon">
+                  <svg width="40" height="24" viewBox="0 0 40 24">
+                    <polyline
+                      points="0,10 10,18 20,8 30,20 40,14"
+                      fill="none"
+                      stroke="#281AC8"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </span>
               </div>
             </div>
           </div>
@@ -264,7 +294,11 @@ const Dashboard = () => {
             />
           ) : (
             <>
-              <button className="btn-add" style={{marginBottom: '2.5rem'}} onClick={() => setShowAddForm(true)}>
+              <button
+                className="btn-add"
+                style={{ marginBottom: "2.5rem" }}
+                onClick={() => setShowAddForm(true)}
+              >
                 + Tambah Transaksi
               </button>
               <div className="transaction-grid">
@@ -297,13 +331,36 @@ const Dashboard = () => {
                       <div>
                         Tanggal:{" "}
                         {transaction.date
-                          ? new Date(transaction.date).toLocaleDateString("id-ID")
+                          ? new Date(transaction.date).toLocaleDateString(
+                              "id-ID"
+                            )
                           : "-"}
                       </div>
                       <div>Deskripsi: {transaction.description || "-"}</div>
-                      <div className="transaction-actions" style={{ justifyContent: 'flex-end', alignItems: 'flex-end', position: 'absolute', right: '1.2rem', bottom: '1.2rem' }}>
-                        <button className="icon-btn btn-edit" title="Edit" onClick={() => setEditId(transaction.id)}><FaEdit /></button>
-                        <button className="icon-btn btn-delete" title="Hapus" onClick={() => handleDelete(transaction.id)}><FaTrash /></button>
+                      <div
+                        className="transaction-actions"
+                        style={{
+                          justifyContent: "flex-end",
+                          alignItems: "flex-end",
+                          position: "absolute",
+                          right: "1.2rem",
+                          bottom: "1.2rem",
+                        }}
+                      >
+                        <button
+                          className="icon-btn btn-edit"
+                          title="Edit"
+                          onClick={() => setEditId(transaction.id)}
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          className="icon-btn btn-delete"
+                          title="Hapus"
+                          onClick={() => handleDelete(transaction.id)}
+                        >
+                          <FaTrash />
+                        </button>
                       </div>
                     </div>
                   ))
