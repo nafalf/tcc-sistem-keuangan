@@ -46,7 +46,7 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-bg-gradient">
       <div className="auth-card">
         <h1>Register</h1>
         {error && <div className="error-message">{error}</div>}
@@ -75,6 +75,7 @@ const Register = () => {
               value={gender}
               onChange={(e) => setGender(e.target.value)}
               required
+              className="register-select"
             >
               <option value="male">Male</option>
               <option value="female">Female</option>
@@ -89,11 +90,11 @@ const Register = () => {
               required
             />
           </div>
-          <button type="submit" className="form-button">
+          <button type="submit" className="register-button-gradient">
             Register
           </button>
         </form>
-        <p className="auth-footer">
+        <p className="register-footer">
           Sudah punya akun? <a href="/login">Login</a>
         </p>
       </div>

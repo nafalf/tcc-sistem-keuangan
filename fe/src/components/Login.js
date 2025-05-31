@@ -78,7 +78,7 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-bg-gradient">
       <div className="auth-card">
         <h1>Login</h1>
         {error && <div className="error-message">{error}</div>}
@@ -91,6 +91,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isLoading}
+              placeholder="username@gmail.com"
             />
           </div>
           <div className="form-field">
@@ -101,14 +102,15 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
+              placeholder="Password"
             />
           </div>
-          <button type="submit" className="form-button" disabled={isLoading}>
-            {isLoading ? "Loading..." : "Login"}
+          <button type="submit" className="login-button-gradient" disabled={isLoading}>
+            {isLoading ? "Loading..." : "Sign in"}
           </button>
         </form>
         <p className="auth-footer">
-          Belum punya akun? <a href="/register">Daftar</a>
+          Belum Punya Akun? <a href="/register">Daftar</a>
         </p>
       </div>
     </div>
