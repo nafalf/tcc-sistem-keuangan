@@ -35,7 +35,8 @@ app.use((req, res, next) => {
 
 // CORS configuration
 const allowedOrigins = [
-  "https://fe-projek-akhir-dot-b-08-450916.uc.r.appspot.com/"
+  "https://fe-projek-akhir-dot-b-08-450916.uc.r.appspot.com/",
+  "http://localhost:3000",
 ];
 
 app.use(cookieParser());
@@ -46,7 +47,8 @@ app.use(
 
       if (allowedOrigins.indexOf(origin) === -1) {
         console.log("Origin yang ditolak:", origin);
-        const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
         return callback(new Error(msg), false);
       }
       return callback(null, true);
