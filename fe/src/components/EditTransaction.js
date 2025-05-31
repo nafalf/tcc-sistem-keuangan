@@ -22,6 +22,8 @@ const EditTransaction = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const today = new Date().toISOString().split("T")[0];
+
   const refreshAccessToken = async () => {
     try {
       const refreshToken = getCookie("refreshToken");
@@ -94,6 +96,10 @@ const EditTransaction = () => {
 
     initializeData();
   }, [id]);
+
+  useEffect(() => {
+    if (!formData.date) setFormData((prev) => ({ ...prev, date: today }));
+  }, [formData.date]);
 
   const fetchTransaction = async () => {
     try {
@@ -278,15 +284,7 @@ const EditTransaction = () => {
 
         <div className="form-group">
           <label htmlFor="date">Tanggal</label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            max={new Date().toISOString().split("T")[0]}
-          />
+          <input type="date" id="date" name="date" value={formData.date} onChange={handleChange} required max={today} />
         </div>
 
         <div className="form-group">

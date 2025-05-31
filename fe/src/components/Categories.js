@@ -4,6 +4,8 @@ import axios from "axios";
 import "./Categories.css";
 import config from "../config";
 import { getCookie } from "../utils/cookieUtils";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import Sidebar from "./Sidebar";
 
 const API_URL = config.API_URL;
 
@@ -172,120 +174,115 @@ const Categories = () => {
   };
 
   return (
-    <div className="categories-page">
-      <div className="container">
-        <div className="categories-header">
-          <h1>Kategori</h1>
-          <button className="btn-back" onClick={() => navigate(-1)}>
-            Kembali
-          </button>
-        </div>
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
-        {showAddForm ? (
-          <div className="add-category-form">
-            <h2>Tambah Kategori Baru</h2>
-            <form onSubmit={handleAddCategory}>
-              <div className="form-group">
-                <label htmlFor="name">Nama Kategori</label>
-                <input
-                  type="text"
-                  id="name"
-                  value={newCategory.name}
-                  onChange={(e) => setNewCategory({ name: e.target.value })}
-                  required
-                  placeholder="Masukkan nama kategori"
-                  minLength={1}
-                  maxLength={255}
-                />
-              </div>
-              <div className="button-group">
-                <button type="submit" className="btn-save">
-                  Simpan
-                </button>
-                <button
-                  type="button"
-                  className="btn-cancel"
-                  onClick={() => setShowAddForm(false)}
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-          </div>
-        ) : showEditForm ? (
-          <div className="edit-category-form">
-            <h2>Edit Kategori</h2>
-            <form onSubmit={handleEditCategory}>
-              <div className="form-group">
-                <label htmlFor="edit-name">Nama Kategori</label>
-                <input
-                  type="text"
-                  id="edit-name"
-                  value={editingCategory?.name || ""}
-                  onChange={(e) =>
-                    setEditingCategory({
-                      ...editingCategory,
-                      name: e.target.value,
-                    })
-                  }
-                  required
-                  placeholder="Masukkan nama kategori"
-                  minLength={1}
-                  maxLength={255}
-                />
-              </div>
-              <div className="button-group">
-                <button type="submit" className="btn-save">
-                  Simpan
-                </button>
-                <button
-                  type="button"
-                  className="btn-cancel"
-                  onClick={() => {
-                    setShowEditForm(false);
-                    setEditingCategory(null);
-                  }}
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-          </div>
-        ) : (
-          <>
-            <div className="categories-grid">
-              {categories.length === 0 ? (
-                <div className="no-data-message">
-                  Belum ada kategori. Silakan tambahkan kategori baru.
-                </div>
-              ) : (
-                categories.map((category) => (
-                  <div key={category.id} className="category-card">
-                    <h3>{category.name}</h3>
-                    <div className="category-actions">
-                      <button
-                        className="btn-edit"
-                        onClick={() => startEdit(category)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn-delete"
-                        onClick={() => handleDeleteCategory(category.id)}
-                      >
-                        Hapus
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+    <div className="main-layout">
+      <Sidebar />
+      <div className="main-content">
+        <div className="categories-page">
+          <div className="container">
+            <div className="categories-header">
+              <h1>Kategori</h1>
+              
             </div>
-            <button className="btn-add" onClick={() => setShowAddForm(true)}>
-              + Tambah Kategori
-            </button>
-          </>
-        )}
+            {error && <div className="error-message">{error}</div>}
+            {success && <div className="success-message">{success}</div>}
+            {showAddForm ? (
+              <div className="add-category-form">
+                <h2>Tambah Kategori Baru</h2>
+                <form onSubmit={handleAddCategory}>
+                  <div className="form-group">
+                    <label htmlFor="name">Nama Kategori</label>
+                    <input
+                      type="text"
+                      id="name"
+                      value={newCategory.name}
+                      onChange={(e) => setNewCategory({ name: e.target.value })}
+                      required
+                      placeholder="Masukkan nama kategori"
+                      minLength={1}
+                      maxLength={255}
+                    />
+                  </div>
+                  <div className="button-group">
+                    <button type="submit" className="btn-save">
+                      Simpan
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => setShowAddForm(false)}
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : showEditForm ? (
+              <div className="edit-category-form">
+                <h2>Edit Kategori</h2>
+                <form onSubmit={handleEditCategory}>
+                  <div className="form-group">
+                    <label htmlFor="edit-name">Nama Kategori</label>
+                    <input
+                      type="text"
+                      id="edit-name"
+                      value={editingCategory?.name || ""}
+                      onChange={(e) =>
+                        setEditingCategory({
+                          ...editingCategory,
+                          name: e.target.value,
+                        })
+                      }
+                      required
+                      placeholder="Masukkan nama kategori"
+                      minLength={1}
+                      maxLength={255}
+                    />
+                  </div>
+                  <div className="button-group">
+                    <button type="submit" className="btn-save">
+                      Simpan
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => {
+                        setShowEditForm(false);
+                        setEditingCategory(null);
+                      }}
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <>
+                <div className="categories-grid">
+                  {categories.length === 0 ? (
+                    <div className="no-data-message">
+                      Belum ada kategori. Silakan tambahkan kategori baru.
+                    </div>
+                  ) : (
+                    categories.map((category) => (
+                      <div key={category.id} className="category-card">
+                        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                          <h3>{category.name}</h3>
+                          <div className="category-actions" style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
+                            <button className="icon-btn btn-edit" title="Edit" onClick={() => startEdit(category)}><FaEdit /></button>
+                            <button className="icon-btn btn-delete" title="Hapus" onClick={() => handleDeleteCategory(category.id)}><FaTrash /></button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <button className="btn-add" onClick={() => setShowAddForm(true)}>
+                  + Tambah Kategori
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

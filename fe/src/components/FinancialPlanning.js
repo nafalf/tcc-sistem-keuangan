@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "./FinancialPlanning.css";
 import config from "../config";
 import { getCookie } from "../utils/cookieUtils";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import Sidebar from "./Sidebar";
 
 const API_URL = config.API_URL;
 
@@ -224,173 +226,198 @@ const FinancialPlanning = () => {
   };
 
   return (
-    <div className="planning-page">
-      <div className="container">
-        <div className="planning-header">
-          <h1>Perencanaan Keuangan</h1>
-          <button className="btn-back" onClick={() => navigate("/dashboard")}>
-            Kembali ke Dashboard
-          </button>
-        </div>
+    <div className="main-layout">
+      <Sidebar />
+      <div className="main-content">
+        <div className="planning-page">
+          <div className="container">
+           
 
-        <div className="financial-summary">
-          <div className="summary-card total-balance">
-            <h3>Total Saldo</h3>
-            <p className="amount">
-              Rp {summary.totalBalance.toLocaleString("id-ID")}
-            </p>
-          </div>
-          <div className="summary-row">
-            <div className="summary-card planned">
-              <h3>Total Terencana</h3>
-              <p className="amount">
-                Rp {summary.totalPlanned.toLocaleString("id-ID")}
-              </p>
-            </div>
-            <div className="summary-card remaining">
-              <h3>Sisa Saldo</h3>
-              <p className="amount">
-                Rp {summary.remainingBalance.toLocaleString("id-ID")}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {!showAddForm && (
-          <button className="btn-add" onClick={() => setShowAddForm(true)}>
-            + Tambah Perencanaan
-          </button>
-        )}
-
-        {showAddForm ? (
-          <div className="add-plan-form">
-            <h2>
-              {editingPlan ? "Edit Perencanaan" : "Tambah Perencanaan Baru"}
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Kategori:</label>
-                <select
-                  name="categoryId"
-                  value={newPlan.categoryId}
-                  onChange={handleInputChange}
-                  required
-                  disabled={editingPlan}
-                >
-                  <option value="">Pilih Kategori</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Jumlah (Rp):</label>
-                <input
-                  type="number"
-                  name="amount"
-                  value={newPlan.amount}
-                  onChange={handleInputChange}
-                  onBlur={(e) => {
-                    if (e.target.value === "") return;
-                    const numericValue = Math.max(0, parseInt(e.target.value, 10));
-                    setNewPlan((prev) => ({
-                      ...prev,
-                      amount: numericValue,
-                    }));
-                  }}
-                  required
-                  min="0"
-                />
-
-              </div>
-              <div className="form-group">
-                <label>Deskripsi:</label>
-                <textarea
-                  name="description"
-                  value={newPlan.description}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-actions">
-                <button type="submit" className="btn-submit">
-                  {editingPlan ? "Update" : "Simpan"}
-                </button>
-                <button
-                  type="button"
-                  className="btn-cancel"
-                  onClick={handleCancel}
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-          </div>
-        ) : (
-          <>
-            <div className="plans-grid">
-              {plans.length === 0 ? (
-                <div className="no-plans">
-                  Belum ada perencanaan keuangan. Silakan tambahkan perencanaan
-                  baru.
+            <div className="summary-wrapper">
+              <div className="wallet-title">Perencanaan Keuangan</div>
+              <div className="summary-row-horizontal">
+                <div className="summary-card planned">
+                  <h3>Total Terencana</h3>
+                  <p className="amount">Rp {summary.totalPlanned.toLocaleString("id-ID")}</p>
+                  <div className="period-placeholder"></div>
+                  <span className="summary-icon">
+                    {/* SVG merah muda */}
+                    <svg width="60" height="32" viewBox="0 0 60 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0 32V24C6 24 12 16 18 16C24 16 30 28 36 28C42 28 48 8 54 8C57 8 60 16 60 16V32H0Z" fill="url(#pink)" fillOpacity="0.18"/>
+                      <defs>
+                        <linearGradient id="pink" x1="0" y1="0" x2="60" y2="32" gradientUnits="userSpaceOnUse">
+                          <stop stop-color="#FD749B"/>
+                          <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </span>
                 </div>
-              ) : (
-                plans.map((plan) => (
-                  <div key={plan.id} className="plan-card">
-                    <div className="plan-header">
-                      <h3>{getCategoryName(plan.categoryId)}</h3>
-                      <div className="plan-actions">
-                        <button
-                          className="btn-edit"
-                          onClick={() => handleEdit(plan)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="btn-delete"
-                          onClick={() => handleDelete(plan.id)}
-                        >
-                          Hapus
-                        </button>
-                      </div>
-                    </div>
-                    <div className="plan-details">
-                      <div className="detail-row">
-                        <span className="label">Jumlah:</span>
-                        <span className="value">
-                          Rp {Number(plan.amount).toLocaleString("id-ID")}
-                        </span>
-                      </div>
-                      <div className="detail-row">
-                        <span className="label">Sisa:</span>
-                        <span className="value">
-                          Rp{" "}
-                          {Number(plan.remainingAmount).toLocaleString("id-ID")}
-                        </span>
-                      </div>
-                      <div className="detail-row">
-                        <span className="label">Deskripsi:</span>
-                        <span className="value">{plan.description}</span>
-                      </div>
-                      <div className="progress-bar">
-                        <div
-                          className="progress"
-                          style={{
-                            width: `${
-                              (plan.remainingAmount / plan.amount) * 100
-                            }%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+                <div className="summary-card total-balance">
+                  <h3>Total Saldo</h3>
+                  <p className="amount">Rp {summary.totalBalance.toLocaleString("id-ID")}</p>
+                  <div className="period-placeholder"></div>
+                  <span className="summary-icon">
+                    {/* SVG ungu */}
+                    <svg width="60" height="32" viewBox="0 0 60 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g>
+                        <rect x="5" y="20" width="4" height="8" rx="2" fill="#C5C5C5"/>
+                        <rect x="13" y="16" width="4" height="12" rx="2" fill="#C5C5C5"/>
+                        <rect x="21" y="22" width="4" height="6" rx="2" fill="#C5C5C5"/>
+                        <rect x="29" y="18" width="4" height="10" rx="2" fill="#C5C5C5"/>
+                        <rect x="37" y="24" width="4" height="4" rx="2" fill="#C5C5C5"/>
+                        <rect x="45" y="12" width="4" height="16" rx="2" fill="#7B61FF"/>
+                      </g>
+                    </svg>
+                  </span>
+                </div>
+                <div className="summary-card remaining">
+                  <h3>Sisa Saldo</h3>
+                  <p className="amount">Rp {summary.remainingBalance.toLocaleString("id-ID")}</p>
+                  <div className="period-placeholder"></div>
+                  <span className="summary-icon">
+                    {/* SVG biru muda */}
+                    <svg width="60" height="32" viewBox="0 0 60 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0 32V24C6 24 12 16 18 16C24 16 30 28 36 28C42 28 48 8 54 8C57 8 60 16 60 16V32H0Z" fill="url(#blue)" fillOpacity="0.18"/>
+                      <defs>
+                        <linearGradient id="blue" x1="0" y1="0" x2="60" y2="32" gradientUnits="userSpaceOnUse">
+                          <stop stop-color="#00D1FF"/>
+                          <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </span>
+                </div>
+              </div>
             </div>
-          </>
-        )}
+
+            {!showAddForm && (
+              <button className="btn-add" onClick={() => setShowAddForm(true)}>
+                + Tambah Perencanaan
+              </button>
+            )}
+
+            {showAddForm ? (
+              <div className="add-plan-form">
+                <h2>
+                  {editingPlan ? "Edit Perencanaan" : "Tambah Perencanaan Baru"}
+                </h2>
+                <form onSubmit={handleSubmit}>
+                  <div className="form-group">
+                    <label>Kategori:</label>
+                    <select
+                      name="categoryId"
+                      value={newPlan.categoryId}
+                      onChange={handleInputChange}
+                      required
+                      disabled={editingPlan}
+                    >
+                      <option value="">Pilih Kategori</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Jumlah (Rp):</label>
+                    <input
+                      type="number"
+                      name="amount"
+                      value={newPlan.amount}
+                      onChange={handleInputChange}
+                      onBlur={(e) => {
+                        if (e.target.value === "") return;
+                        const numericValue = Math.max(0, parseInt(e.target.value, 10));
+                        setNewPlan((prev) => ({
+                          ...prev,
+                          amount: numericValue,
+                        }));
+                      }}
+                      required
+                      min="0"
+                    />
+
+                  </div>
+                  <div className="form-group">
+                    <label>Deskripsi:</label>
+                    <textarea
+                      name="description"
+                      value={newPlan.description}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-actions">
+                    <button type="submit" className="btn-submit">
+                      {editingPlan ? "Update" : "Simpan"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={handleCancel}
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <>
+                <div className="plans-grid">
+                  {plans.length === 0 ? (
+                    <div className="no-plans">
+                      Belum ada perencanaan keuangan. Silakan tambahkan perencanaan
+                      baru.
+                    </div>
+                  ) : (
+                    plans.map((plan) => (
+                      <div key={plan.id} className="plan-card">
+                        <div className="plan-header">
+                          <h3>{getCategoryName(plan.categoryId)}</h3>
+                          <div className="plan-actions" style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
+                            <button className="icon-btn btn-edit" title="Edit" onClick={() => handleEdit(plan)}><FaEdit /></button>
+                            <button className="icon-btn btn-delete" title="Hapus" onClick={() => handleDelete(plan.id)}><FaTrash /></button>
+                          </div>
+                        </div>
+                        <div className="plan-details">
+                          <div className="detail-row">
+                            <span className="label">Jumlah:</span>
+                            <span className="value">
+                              Rp {Number(plan.amount).toLocaleString("id-ID")}
+                            </span>
+                          </div>
+                          <div className="detail-row">
+                            <span className="label">Sisa:</span>
+                            <span className="value">
+                              Rp{" "}
+                              {Number(plan.remainingAmount).toLocaleString("id-ID")}
+                            </span>
+                          </div>
+                          <div className="detail-row">
+                            <span className="label">Deskripsi:</span>
+                            <span className="value">{plan.description}</span>
+                          </div>
+                          <div className="progress-bar">
+                            <div
+                              className="progress"
+                              style={{
+                                width: `${
+                                  (plan.remainingAmount / plan.amount) * 100
+                                }%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

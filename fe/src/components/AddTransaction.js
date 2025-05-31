@@ -21,6 +21,8 @@ const AddTransaction = ({ onTransactionAdded }) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const today = new Date().toISOString().split("T")[0];
+
   useEffect(() => {
     const token = getCookie("accessToken");
     if (!token) {
@@ -31,6 +33,10 @@ const AddTransaction = ({ onTransactionAdded }) => {
 
   useEffect(() => {
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, date: today }));
   }, []);
 
   const fetchCategories = async () => {
@@ -180,15 +186,7 @@ const AddTransaction = ({ onTransactionAdded }) => {
 
         <div className="form-group">
           <label htmlFor="date">Tanggal</label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            max={new Date().toISOString().split("T")[0]}
-          />
+          <input type="date" id="date" name="date" value={formData.date} onChange={handleChange} required max={today} />
         </div>
 
         <div className="form-group">

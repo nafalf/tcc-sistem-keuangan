@@ -5,6 +5,7 @@ import "./Profile.css";
 import defaultProfile from "./default-profile.png";
 import config from "../config";
 import { getCookie, removeCookie } from "../utils/cookieUtils";
+import Sidebar from "./Sidebar";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const MAX_WIDTH = 800; // Maximum width for compressed image
@@ -267,97 +268,94 @@ const Profile = () => {
   }
 
   return (
-    <div className="profile-page">
-      <div className="profile-container">
-        <div className="profile-card">
-          <div className="profile-header">
-            <h2>Profil Saya</h2>
-          </div>
-          <div className="profile-content">
-            <div className="profile-image-container">
-              <img
-                src={previewImage || defaultProfile}
-                alt="Profile"
-                className="profile-image"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = defaultProfile;
-                }}
-              />
-              <div className="image-upload">
-                <label htmlFor="profile-picture" className="upload-button">
-                  Ubah Foto
-                </label>
-                <input
-                  type="file"
-                  id="profile-picture"
-                  name="foto_profil"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  style={{ display: "none" }}
-                />
-              </div>
+    <div className="main-layout">
+      <Sidebar />
+      <div className="profile-page">
+        <div className="profile-container">
+          <div className="profile-card">
+            <div className="profile-header">
+              <h2>Profil Saya</h2>
             </div>
-            {error && <div className="error-message">{error}</div>}
-            {success && <div className="success-message">{success}</div>}
-            <form onSubmit={handleSubmit} className="profile-form">
-              <div className="form-group">
-                <label>Nama</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
+            <div className="profile-content">
+              <div className="profile-image-container">
+                <img
+                  src={previewImage || defaultProfile}
+                  alt="Profile"
+                  className="profile-image"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = defaultProfile;
+                  }}
                 />
+                <div className="image-upload">
+                  <label htmlFor="profile-picture" className="upload-button">
+                    Ubah Foto
+                  </label>
+                  <input
+                    type="file"
+                    id="profile-picture"
+                    name="foto_profil"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: "none" }}
+                  />
+                </div>
               </div>
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Gender</label>
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Pilih Gender</option>
-                  <option value="male">Laki-laki</option>
-                  <option value="female">Perempuan</option>
-                </select>
-              </div>
-              <div className="button-group">
-                <button
-                  type="button"
-                  className="back-button"
-                  onClick={() => navigate(-1)}
-                >
-                  Kembali
-                </button>
-                <button
-                  type="submit"
-                  className="save-button"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
-                </button>
-                <button
-                  type="button"
-                  className="delete-button"
-                  onClick={handleDeleteAccount}
-                >
-                  Hapus Akun
-                </button>
-              </div>
-            </form>
+              {error && <div className="error-message">{error}</div>}
+              {success && <div className="success-message">{success}</div>}
+              <form onSubmit={handleSubmit} className="profile-form">
+                <div className="form-group">
+                  <label>Nama</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Gender</label>
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Pilih Gender</option>
+                    <option value="male">Laki-laki</option>
+                    <option value="female">Perempuan</option>
+                  </select>
+                </div>
+                <div className="button-group">
+                  
+                  <button
+                    type="submit"
+                    className="save-button"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
+                  </button>
+                  <button
+                    type="button"
+                    className="delete-button"
+                    onClick={handleDeleteAccount}
+                  >
+                    Hapus Akun
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
