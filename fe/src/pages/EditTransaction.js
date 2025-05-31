@@ -6,8 +6,7 @@ import { getCookie } from "../utils/cookieUtils";
 import "./EditTransaction.css";
 
 const API_URL =
-  process.env.REACT_APP_API_URL ||
-  "http://localhost:5000";
+  process.env.REACT_APP_API_URL;
 
 const EditTransaction = () => {
   const { id } = useParams(); // Mengambil ID transaksi dari URL
