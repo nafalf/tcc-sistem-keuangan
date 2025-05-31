@@ -11,6 +11,7 @@ import {
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import sequelize from "../config/database.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -272,47 +273,63 @@ export const UserController = {
   },
 
   deleteAccount: async (req, res) => {
-    const userId = req.user.userId; // Ambil userId dari token yang sudah diverifikasi
+    const userId = req.user.userId;
 
     try {
-      // Hapus data terkait terlebih dahulu
-      // 1. Hapus Plans
-      await Plan.destroy({ where: { userId } });
-      console.log(`Plans for user ${userId} deleted.`);
+      // Mulai transaction untuk memastikan semua operasi berhasil atau tidak sama sekali
+      const result = await sequelize.transaction(async (t) => {
+        // 1. Hapus Transactions terlebih dahulu
+        await Transaction.destroy({ 
+          where: { userId },
+          transaction: t
+        });
+        console.log(`Transactions for user ${userId} deleted.`);
 
-      // 2. Hapus Transactions
-      await Transaction.destroy({ where: { userId } });
-      console.log(`Transactions for user ${userId} deleted.`);
+        // 2. Hapus Plans
+        await Plan.destroy({ 
+          where: { userId },
+          transaction: t
+        });
+        console.log(`Plans for user ${userId} deleted.`);
 
-      // 3. Hapus Categories (Langkah ini dihilangkan karena tabel categories tidak memiliki kolom userId)
-      //    Jika kategori bersifat user-specific dan memiliki foreign key ke user dengan nama kolom lain,
-      //    baris ini perlu disesuaikan. Untuk saat ini, kita asumsikan kategori bersifat global atau
-      //    tidak dihapus bersama user.
-      console.log(
-        `Skipping category deletion as 'userId' column is not present in categories table.`
-      );
+        // 3. Hapus Categories
+        await Category.destroy({ 
+          where: { userId },
+          transaction: t
+        });
+        console.log(`Categories for user ${userId} deleted.`);
 
-      // 4. Hapus User
-      const user = await User.findByPk(userId);
-      if (!user) {
-        return res.status(404).json({
-          status: "error",
-          message: "User tidak ditemukan",
+        // 4. Hapus User
+        const user = await User.findByPk(userId);
+        if (!user) {
+          throw new Error("User tidak ditemukan");
+        }
+
+        await user.destroy({ transaction: t });
+        console.log(`User ${userId} deleted.`);
+
+        return true;
+      });
+
+      if (result) {
+        res.status(200).json({
+          status: "success",
+          message: "Akun berhasil dihapus beserta data terkait.",
         });
       }
-      await user.destroy();
-      console.log(`User ${userId} deleted.`);
-
-      res.status(200).json({
-        status: "success",
-        message: "Akun berhasil dihapus beserta data terkait.",
-      });
     } catch (error) {
       console.error("Error in deleteAccount:", error);
+      // Log detail error untuk debugging
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
       res.status(500).json({
         status: "error",
         message: "Gagal menghapus akun.",
-        detail: error.message, // Sertakan detail error untuk debugging
+        detail: error.message,
       });
     }
   },
