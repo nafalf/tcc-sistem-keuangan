@@ -3,14 +3,18 @@ import sequelize from "../config/database.js";
 
 // Daftar kategori default
 const defaultCategories = [
-  { name: "Hiburan", type: "expense" },
-  { name: "Makanan", type: "expense" },
-  { name: "Transportasi", type: "expense" },
-  { name: "Investasi", type: "expense" },
-  { name: "Gaji", type: "income" },
-  { name: "Hadiah", type: "income" },
-  { name: "Pakaian", type: "expense" },
-  { name: "Kesehatan", type: "expense" },
+  "Hiburan",
+  "Makanan",
+  "Transportasi",
+  "Investasi",
+  "Gaji",
+  "Hadiah",
+  "Pakaian",
+  "Kesehatan",
+  "Tagihan",
+  "Belanja",
+  "Bonus",
+  "Lainnya",
 ];
 
 export const up = async () => {
@@ -22,13 +26,13 @@ export const up = async () => {
 
     // Untuk setiap user, tambahkan kategori default jika belum ada
     for (const user of users) {
-      for (const category of defaultCategories) {
+      for (const categoryName of defaultCategories) {
         try {
           // Cek apakah kategori sudah ada untuk user ini
           const existingCategory = await sequelize.query(
             `SELECT id FROM categories WHERE name = ? AND userId = ?`,
             {
-              replacements: [category.name, user.id],
+              replacements: [categoryName, user.id],
               type: sequelize.QueryTypes.SELECT,
             }
           );
@@ -38,18 +42,18 @@ export const up = async () => {
             await sequelize.query(
               `INSERT INTO categories (name, userId, created_at) VALUES (?, ?, NOW())`,
               {
-                replacements: [category.name, user.id],
+                replacements: [categoryName, user.id],
               }
             );
-            console.log(`Added category ${category.name} for user ${user.id}`);
+            console.log(`Added category ${categoryName} for user ${user.id}`);
           } else {
             console.log(
-              `Category ${category.name} already exists for user ${user.id}`
+              `Category ${categoryName} already exists for user ${user.id}`
             );
           }
         } catch (error) {
           console.error(
-            `Error adding category ${category.name} for user ${user.id}:`,
+            `Error adding category ${categoryName} for user ${user.id}:`,
             error
           );
         }
@@ -70,7 +74,8 @@ export const down = async () => {
       DELETE FROM categories 
       WHERE name IN (
         'Hiburan', 'Makanan', 'Transportasi', 'Investasi',
-        'Gaji', 'Hadiah', 'Pakaian', 'Kesehatan'
+        'Gaji', 'Hadiah', 'Pakaian', 'Kesehatan',
+        'Tagihan', 'Belanja', 'Bonus', 'Lainnya'
       )
     `);
 

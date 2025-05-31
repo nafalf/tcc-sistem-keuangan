@@ -1,9 +1,9 @@
-import { up as addDefaultCategories } from "../migrations/20240327_add_default_categories.js";
+import { up as addDefaultCategoriesToAllUsers } from "../migrations/20240328_add_default_categories_to_all_users.js";
 
 const runMigrations = async () => {
   try {
     console.log("Running migrations...");
-    await addDefaultCategories();
+    await addDefaultCategoriesToAllUsers();
     console.log("Migrations completed successfully");
     process.exit(0);
   } catch (error) {

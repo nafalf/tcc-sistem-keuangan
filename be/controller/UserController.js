@@ -18,14 +18,18 @@ const __dirname = path.dirname(__filename);
 
 // Daftar kategori default
 const defaultCategories = [
-  { name: "Hiburan", type: "expense" },
-  { name: "Makanan", type: "expense" },
-  { name: "Transportasi", type: "expense" },
-  { name: "Investasi", type: "expense" },
-  { name: "Gaji", type: "income" },
-  { name: "Hadiah", type: "income" },
-  { name: "Pakaian", type: "expense" },
-  { name: "Kesehatan", type: "expense" },
+  "Hiburan",
+  "Makanan",
+  "Transportasi",
+  "Investasi",
+  "Gaji",
+  "Hadiah",
+  "Pakaian",
+  "Kesehatan",
+  "Tagihan",
+  "Belanja",
+  "Bonus",
+  "Lainnya",
 ];
 
 export const UserController = {
@@ -54,10 +58,13 @@ export const UserController = {
         password: hashedPassword,
       });
 
-      // Tambahkan kategori default untuk user baru
-      for (const category of defaultCategories) {
+      // Ambil kategori default dari tabel default_categories
+      const [defaultCategories] = await sequelize.query(
+        "SELECT name FROM default_categories"
+      );
+      for (const cat of defaultCategories) {
         await Category.create({
-          name: category.name,
+          name: cat.name,
           userId: user.id,
         });
       }
@@ -279,23 +286,23 @@ export const UserController = {
       // Mulai transaction untuk memastikan semua operasi berhasil atau tidak sama sekali
       const result = await sequelize.transaction(async (t) => {
         // 1. Hapus Transactions terlebih dahulu
-        await Transaction.destroy({ 
+        await Transaction.destroy({
           where: { userId },
-          transaction: t
+          transaction: t,
         });
         console.log(`Transactions for user ${userId} deleted.`);
 
         // 2. Hapus Plans
-        await Plan.destroy({ 
+        await Plan.destroy({
           where: { userId },
-          transaction: t
+          transaction: t,
         });
         console.log(`Plans for user ${userId} deleted.`);
 
         // 3. Hapus Categories
-        await Category.destroy({ 
+        await Category.destroy({
           where: { userId },
-          transaction: t
+          transaction: t,
         });
         console.log(`Categories for user ${userId} deleted.`);
 
@@ -323,9 +330,9 @@ export const UserController = {
       console.error("Error details:", {
         name: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
-      
+
       res.status(500).json({
         status: "error",
         message: "Gagal menghapus akun.",
