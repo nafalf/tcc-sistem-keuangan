@@ -12,6 +12,21 @@ import { syncDatabase } from "./config/db.js";
 const app = express();
 dotenv.config();
 
+// Log environment variables (tanpa password)
+console.log("Environment Variables:");
+console.log("PORT:", process.env.PORT);
+console.log("DB_HOST:", process.env.DB_HOST);
+console.log("DB_USERNAME:", process.env.DB_USERNAME);
+console.log("DB_NAME:", process.env.DB_NAME);
+console.log(
+  "ACCESS_TOKEN_SECRET:",
+  process.env.ACCESS_TOKEN_SECRET ? "Set" : "Not Set"
+);
+console.log(
+  "REFRESH_TOKEN_SECRET:",
+  process.env.REFRESH_TOKEN_SECRET ? "Set" : "Not Set"
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
