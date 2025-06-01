@@ -166,21 +166,29 @@ const Register = () => {
         const serverError = err.response.data;
 
         // Cek khusus untuk email yang sudah terdaftar
-        if (
-          serverError.msg &&
-          serverError.msg.toLowerCase().includes("email sudah terdaftar")
-        ) {
-          setErrors({
-            email:
-              "Email ini sudah terdaftar. Silakan gunakan email lain atau login jika ini adalah akun Anda.",
-            submit: "Email sudah terdaftar dalam sistem",
-          });
-        } else if (serverError.errors) {
-          // Jika server mengembalikan multiple errors
-          setErrors(serverError.errors);
+        if (err.response.status === 400 && serverError.msg) {
+          if (
+            serverError.msg.toLowerCase().includes("email sudah terdaftar") ||
+            serverError.msg.toLowerCase().includes("email already exists")
+          ) {
+            setErrors({
+              email:
+                "Email ini sudah terdaftar dalam sistem. Silakan gunakan email lain atau login jika ini adalah akun Anda.",
+              submit: "Email sudah terdaftar",
+            });
+          } else if (serverError.errors) {
+            // Jika server mengembalikan multiple errors
+            setErrors(serverError.errors);
+          } else {
+            setErrors({
+              submit: serverError.msg || "Terjadi kesalahan saat registrasi",
+            });
+          }
         } else {
           setErrors({
-            submit: serverError.msg || `Server error: ${err.response.status}`,
+            submit:
+              serverError.msg ||
+              `Terjadi kesalahan saat registrasi (${err.response.status})`,
           });
         }
       } else if (err.request) {
@@ -220,6 +228,12 @@ const Register = () => {
                 errors.email && errors.email.includes("sudah terdaftar")
                   ? "1px solid #ffeeba"
                   : "1px solid #fecaca",
+              padding: "12px 16px",
+              borderRadius: "8px",
+              marginBottom: "16px",
+              fontSize: "0.95rem",
+              textAlign: "center",
+              width: "100%",
             }}
           >
             {errors.submit}
