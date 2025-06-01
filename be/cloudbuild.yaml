@@ -1,7 +1,19 @@
 steps:
   # Mengambil file .env dari Cloud Storage bucket ke workspace
   - name: "gcr.io/cloud-builders/gsutil"
-    args: ["cp", "gs://projekakhir/.env", "/workspace/.env"]
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        echo "Copying .env from bucket to workspace..."
+        gsutil cp gs://projekakhir/.env /workspace/.env
+        # Membaca file .env dan menyiapkan string untuk --set-env-vars
+        echo "Reading environment variables from .env file..."
+        ENV_VARS=$(grep -v '^#' /workspace/.env | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
+        echo "Environment variables prepared (without sensitive values):"
+        echo "$ENV_VARS" | sed 's/DB_PASSWORD=[^,]*/DB_PASSWORD=****/g'
+        # Simpan ke file untuk digunakan di step berikutnya
+        echo "$ENV_VARS" > /workspace/env_vars.txt
 
   # Membuat image dengan perintah "cloud build -t gcr.io/$PROJECT_ID/projek-akhir ."
   # Project ID akan secara otomatis terisi ketika melakukan deploy di project yg dipilih
@@ -18,7 +30,7 @@ steps:
         echo "=== Checking .env file inside the image ==="
         docker run --rm gcr.io/$PROJECT_ID/projek-akhir ls -la /app/.env
         echo -e "\n=== Content of .env file inside the image ==="
-        docker run --rm gcr.io/$PROJECT_ID/projek-akhir cat /app/.env
+        docker run --rm gcr.io/$PROJECT_ID/projek-akhir cat /app/.env | sed 's/DB_PASSWORD=[^$]*/DB_PASSWORD=****/g'
         echo -e "\n=== Testing environment variables inside the image ==="
         docker run --rm gcr.io/$PROJECT_ID/projek-akhir node -e "
           require('dotenv').config();
@@ -35,23 +47,23 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/projek-akhir"]
 
-  # Melakukan deploy ke cloud run dengan environment variables yang sudah ditentukan
+  # Melakukan deploy ke cloud run dengan environment variables dari file
   - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
     args:
-      - "run"
-      - "deploy"
-      - "projek-akhir"
-      - "--image"
-      - "gcr.io/$PROJECT_ID/projek-akhir"
-      - "--timeout"
-      - "360s"
-      - "--port"
-      - "5001"
-      - "--region"
-      - "us-central1"
-      - "--allow-unauthenticated"
-      - "--set-env-vars"
-      - "DB_HOST=34.68.85.93,DB_USERNAME=root,DB_PASSWORD=pwnya112358,DB_NAME=moneytracker,ACCESS_TOKEN_SECRET=rahasia123,REFRESH_TOKEN_SECRET=rahasia456"
+      - "-c"
+      - |
+        # Baca environment variables dari file
+        ENV_VARS=$(cat /workspace/env_vars.txt)
+        echo "Deploying with environment variables (without sensitive values)..."
+        echo "$ENV_VARS" | sed 's/DB_PASSWORD=[^,]*/DB_PASSWORD=****/g'
+        gcloud run deploy projek-akhir \
+          --image gcr.io/$PROJECT_ID/projek-akhir \
+          --timeout 360s \
+          --port 5001 \
+          --region us-central1 \
+          --allow-unauthenticated \
+          --set-env-vars "$ENV_VARS"
 
 # Log hanya akan disimpan di Google Cloud Logging
 # Log tidak akan disimpan di Google Cloud Storage (butuh hak akses).
