@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import config from "../config";
@@ -15,6 +15,12 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("Register component mounted");
+    console.log("Current formData:", formData);
+    console.log("Current errors:", errors);
+  }, [formData, errors]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -110,7 +116,18 @@ const Register = () => {
       if (err.response) {
         // Error dari server
         const serverError = err.response.data;
-        if (serverError.errors) {
+
+        // Cek khusus untuk email yang sudah terdaftar
+        if (
+          serverError.msg &&
+          serverError.msg.toLowerCase().includes("email sudah terdaftar")
+        ) {
+          setErrors({
+            email:
+              "Email ini sudah terdaftar. Silakan gunakan email lain atau login jika ini adalah akun Anda.",
+            submit: "Email sudah terdaftar dalam sistem",
+          });
+        } else if (serverError.errors) {
           // Jika server mengembalikan multiple errors
           setErrors(serverError.errors);
         } else {
@@ -133,11 +150,34 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-bg-gradient">
-      <div className="auth-card">
+    <div className="auth-bg-gradient" style={{ minHeight: "100vh" }}>
+      <div
+        className="auth-card"
+        style={{ maxWidth: "500px", margin: "0 auto" }}
+      >
         <h1>Register</h1>
-        {errors.submit && <div className="error-message">{errors.submit}</div>}
-        <form onSubmit={handleRegister}>
+        {errors.submit && (
+          <div
+            className="error-message"
+            style={{
+              backgroundColor:
+                errors.email && errors.email.includes("sudah terdaftar")
+                  ? "#fff3cd"
+                  : "#fee2e2",
+              color:
+                errors.email && errors.email.includes("sudah terdaftar")
+                  ? "#856404"
+                  : "#dc2626",
+              border:
+                errors.email && errors.email.includes("sudah terdaftar")
+                  ? "1px solid #ffeeba"
+                  : "1px solid #fecaca",
+            }}
+          >
+            {errors.submit}
+          </div>
+        )}
+        <form onSubmit={handleRegister} style={{ width: "100%" }}>
           <div className="form-field">
             <label>Nama</label>
             <input
@@ -160,8 +200,29 @@ const Register = () => {
               onChange={handleChange}
               required
               className={errors.email ? "error-input" : ""}
+              style={{
+                borderColor:
+                  errors.email && errors.email.includes("sudah terdaftar")
+                    ? "#ffc107"
+                    : undefined,
+                backgroundColor:
+                  errors.email && errors.email.includes("sudah terdaftar")
+                    ? "#fff3cd"
+                    : undefined,
+              }}
             />
-            {errors.email && <div className="field-error">{errors.email}</div>}
+            {errors.email && (
+              <div
+                className="field-error"
+                style={{
+                  color: errors.email.includes("sudah terdaftar")
+                    ? "#856404"
+                    : "#dc2626",
+                }}
+              >
+                {errors.email}
+              </div>
+            )}
           </div>
 
           <div className="form-field">
@@ -224,4 +285,39 @@ const Register = () => {
   );
 };
 
-export default Register;
+class RegisterErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Register Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: "20px", textAlign: "center" }}>
+          <h2>Terjadi kesalahan pada halaman register</h2>
+          <p>Silakan refresh halaman atau coba kembali nanti</p>
+          <pre style={{ color: "red" }}>{this.state.error?.toString()}</pre>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default function RegisterWithErrorBoundary() {
+  return (
+    <RegisterErrorBoundary>
+      <Register />
+    </RegisterErrorBoundary>
+  );
+}
