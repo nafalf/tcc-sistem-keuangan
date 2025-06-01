@@ -1,4 +1,8 @@
 steps:
+  # Mengambil file .env dari Cloud Storage bucket
+  - name: "gcr.io/cloud-builders/gsutil"
+    args: ["cp", "gs://projekakhir/.env", "be/.env"]
+
   # Membuat image dengan perintah "cloud build -t gcr.io/$PROJECT_ID/projek-akhir ."
   # Project ID akan secara otomatis terisi ketika melakukan deploy di project yg dipilih
   - name: "gcr.io/cloud-builders/docker"
