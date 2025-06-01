@@ -24,18 +24,26 @@ steps:
     args: ["build", "-t", "gcr.io/$PROJECT_ID/projek-akhir", "."]
     dir: "be"
 
-  # Verifikasi file .env di dalam image
+  # Verifikasi file .env dan environment variables di dalam image
   - name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
     args:
       - "-c"
       - |
-        echo "Checking .env file inside the image:"
+        echo "=== Checking .env file inside the image ==="
         docker run --rm gcr.io/$PROJECT_ID/projek-akhir ls -la /app/.env
-        echo "Content of .env file inside the image:"
+        echo -e "\n=== Content of .env file inside the image ==="
         docker run --rm gcr.io/$PROJECT_ID/projek-akhir cat /app/.env
-        echo "Checking environment variables inside the image:"
-        docker run --rm gcr.io/$PROJECT_ID/projek-akhir env | grep -E "DB_|PORT|TOKEN"
+        echo -e "\n=== Testing environment variables inside the image ==="
+        docker run --rm gcr.io/$PROJECT_ID/projek-akhir node -e "
+          require('dotenv').config();
+          console.log('DB_HOST:', process.env.DB_HOST);
+          console.log('DB_NAME:', process.env.DB_NAME);
+          console.log('DB_USERNAME:', process.env.DB_USERNAME);
+          console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? 'Set' : 'Not Set');
+          console.log('ACCESS_TOKEN_SECRET:', process.env.ACCESS_TOKEN_SECRET ? 'Set' : 'Not Set');
+          console.log('REFRESH_TOKEN_SECRET:', process.env.REFRESH_TOKEN_SECRET ? 'Set' : 'Not Set');
+        "
 
   # Meng-upload/push image yg telah dibuat ke Artifact Registry
   # Pada bagian ini, dijalankan perintah "docker push 'gcr.io/$PROJECT_ID/projek-akhir'"
