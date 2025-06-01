@@ -1,7 +1,7 @@
 steps:
   # Step 1: Ambil file env.yaml dari Cloud Storage
   - name: "gcr.io/cloud-builders/gsutil"
-    args: ["cp", "gs://projekakhir/env.yaml", "/workspace/env.yaml"]
+    args: ["cp", "gs://projekakhir/.env.yaml", "/workspace/env.yaml"]
 
   # Step 2: Build Docker image
   - name: "gcr.io/cloud-builders/docker"
