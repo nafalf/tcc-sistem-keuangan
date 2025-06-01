@@ -1,62 +1,42 @@
 steps:
-  # Mengambil file .env dari Cloud Storage bucket ke workspace dan mengubahnya ke format YAML
+  # STEP 1: Download .env dari Cloud Storage dan ubah ke YAML
   - name: "gcr.io/cloud-builders/gsutil"
     entrypoint: "bash"
     args:
       - "-c"
       - |
-        echo "Copying .env from bucket to workspace..."
+        echo "📥 Mengambil .env dari Cloud Storage..."
         gsutil cp gs://projekakhir/.env /workspace/.env
-        echo "Converting .env to YAML format..."
-        # Buat file YAML untuk environment variables
-        cat > /workspace/env.yaml << EOF
-        env_variables:
-        EOF
-        # Tambahkan setiap variabel dari .env ke YAML
+
+        echo "🔄 Mengubah .env ke YAML format..."
+        echo "env_variables:" > /workspace/env.yaml
+
         while IFS='=' read -r line; do
+          # Lewati baris kosong atau komentar
           [[ -z "$line" || "$line" == \#* ]] && continue
-          key=$(echo "$line" | cut -d '=' -f 1 | xargs)
-          value=$(echo "$line" | awk -F '=' '{gsub(/^[ \t"]+|[ \t"]+$/, "", $2); print $2}')
+
+          key=$(echo "$line" | cut -d '=' -f 1 | awk '{$1=$1;print}')
+          value=$(echo "$line" | cut -d '=' -f 2- | sed 's/^ *//;s/ *$//' | sed 's/^"//;s/"$//')
+
+          # Lewati PORT (dikelola Cloud Run)
           [[ "$key" == "PORT" ]] && continue
+
           echo "  $key: \"$value\"" >> /workspace/env.yaml
         done < /workspace/.env
 
-        echo "Environment variables prepared (without sensitive values):"
-        cat /workspace/env.yaml | sed 's/DB_PASSWORD: "[^"]*"/DB_PASSWORD: "****"/g'
+        echo -e "\n✅ YAML akhir (disensor untuk password):"
+        cat /workspace/env.yaml | sed 's/DB_PASSWORD: ".*"/DB_PASSWORD: "****"/g'
 
-  # Membuat image dengan perintah "cloud build -t gcr.io/$PROJECT_ID/projek-akhir ."
-  # Project ID akan secara otomatis terisi ketika melakukan deploy di project yg dipilih
+  # STEP 2: Build Docker image
   - name: "gcr.io/cloud-builders/docker"
     args: ["build", "-t", "gcr.io/$PROJECT_ID/projek-akhir", "."]
     dir: "be"
 
-  # Verifikasi file .env dan environment variables di dalam image
-  - name: "gcr.io/cloud-builders/docker"
-    entrypoint: "bash"
-    args:
-      - "-c"
-      - |
-        echo "=== Checking .env file inside the image ==="
-        docker run --rm gcr.io/$PROJECT_ID/projek-akhir ls -la /app/.env
-        echo -e "\n=== Content of .env file inside the image ==="
-        docker run --rm gcr.io/$PROJECT_ID/projek-akhir cat /app/.env | sed 's/DB_PASSWORD=[^$]*/DB_PASSWORD=****/g'
-        echo -e "\n=== Testing environment variables inside the image ==="
-        docker run --rm gcr.io/$PROJECT_ID/projek-akhir node -e "
-          require('dotenv').config();
-          console.log('DB_HOST:', process.env.DB_HOST);
-          console.log('DB_NAME:', process.env.DB_NAME);
-          console.log('DB_USERNAME:', process.env.DB_USERNAME);
-          console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? 'Set' : 'Not Set');
-          console.log('ACCESS_TOKEN_SECRET:', process.env.ACCESS_TOKEN_SECRET ? 'Set' : 'Not Set');
-          console.log('REFRESH_TOKEN_SECRET:', process.env.REFRESH_TOKEN_SECRET ? 'Set' : 'Not Set');
-        "
-
-  # Meng-upload/push image yg telah dibuat ke Artifact Registry
-  # Pada bagian ini, dijalankan perintah "docker push 'gcr.io/$PROJECT_ID/projek-akhir'"
+  # STEP 3: Push ke Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/projek-akhir"]
 
-  # Melakukan deploy ke cloud run dengan environment variables dari file YAML
+  # STEP 4: Deploy ke Cloud Run menggunakan env.yaml
   - name: "gcr.io/cloud-builders/gcloud"
     args:
       - "run"
@@ -74,7 +54,6 @@ steps:
       - "--env-vars-file"
       - "/workspace/env.yaml"
 
-# Log hanya akan disimpan di Google Cloud Logging
-# Log tidak akan disimpan di Google Cloud Storage (butuh hak akses).
+# Hanya log ke Cloud Logging
 options:
   logging: CLOUD_LOGGING_ONLY
