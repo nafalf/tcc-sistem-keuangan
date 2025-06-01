@@ -1,62 +1,36 @@
 steps:
-  # STEP 1: Download .env dari Cloud Storage dan ubah ke YAML
+  # Step 1: Ambil file env.yaml dari Cloud Storage
   - name: "gcr.io/cloud-builders/gsutil"
-    entrypoint: "bash"
-    args:
-      - "-c"
-      - |
-        echo "📥 Mengambil .env dari Cloud Storage..."
-        gsutil cp gs://projekakhir/.env /workspace/.env
+    args: ["cp", "gs://projekakhir/env.yaml", "/workspace/env.yaml"]
 
-        echo "🔄 Membuat YAML environment variables..."
-        echo "env_variables:" > /workspace/env.yaml
-
-        # Konversi .env ke YAML tanpa spasi/kutip
-        while IFS='=' read -r key value; do
-          # Skip baris kosong dan komentar
-          [[ -z "$key" || "$key" == \#* ]] && continue
-
-          # Bersihkan key dan value (tanpa kutip)
-          key=$(echo "$key" | sed 's/^[ \t]*//;s/[ \t]*$//')
-          value=$(echo "$value" | sed 's/^[ \t"]*//;s/[ \t"]*$//')
-
-          # Skip PORT jika ada
-          [[ "$key" == "PORT" ]] && continue
-
-          echo "  $key: \"$value\"" >> /workspace/env.yaml
-        done < /workspace/.env
-
-        echo -e "\n✅ Isi final env.yaml:"
-        cat /workspace/env.yaml | sed 's/DB_PASSWORD: ".*/DB_PASSWORD: "****"/g'
-
-
-  # STEP 2: Build Docker image
+  # Step 2: Build Docker image
   - name: "gcr.io/cloud-builders/docker"
     args: ["build", "-t", "gcr.io/$PROJECT_ID/projek-akhir", "."]
     dir: "be"
 
-  # STEP 3: Push ke Artifact Registry
+  # Step 3: Push image ke Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/projek-akhir"]
 
-  # STEP 4: Deploy ke Cloud Run menggunakan env.yaml
+  # Step 4: Deploy ke Cloud Run menggunakan env.yaml
   - name: "gcr.io/cloud-builders/gcloud"
     args:
-      - "run"
-      - "deploy"
-      - "projek-akhir"
-      - "--image"
-      - "gcr.io/$PROJECT_ID/projek-akhir"
-      - "--timeout"
-      - "360s"
-      - "--port"
-      - "5001"
-      - "--region"
-      - "us-central1"
-      - "--allow-unauthenticated"
-      - "--env-vars-file"
-      - "/workspace/env.yaml"
+      [
+        "run",
+        "deploy",
+        "projek-akhir",
+        "--image",
+        "gcr.io/$PROJECT_ID/projek-akhir",
+        "--timeout",
+        "360s",
+        "--port",
+        "5001",
+        "--region",
+        "us-central1",
+        "--allow-unauthenticated",
+        "--env-vars-file",
+        "/workspace/env.yaml",
+      ]
 
-# Hanya log ke Cloud Logging
 options:
   logging: CLOUD_LOGGING_ONLY
