@@ -16,7 +16,7 @@ steps:
         while IFS='=' read -r line; do
           [[ -z "$line" || "$line" == \#* ]] && continue
           key=$(echo "$line" | cut -d '=' -f 1 | xargs)
-          value=$(echo "$line" | cut -d '=' -f 2- | xargs)
+          value=$(echo "$line" | awk -F '=' '{gsub(/^[ \t"]+|[ \t"]+$/, "", $2); print $2}')
           [[ "$key" == "PORT" ]] && continue
           echo "  $key: \"$value\"" >> /workspace/env.yaml
         done < /workspace/.env
