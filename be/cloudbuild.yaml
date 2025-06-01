@@ -1,5 +1,5 @@
 steps:
-  # Mengambil file .env dari Cloud Storage bucket ke workspace
+  # Mengambil file .env dari Cloud Storage bucket ke workspace dan mengubahnya ke format YAML
   - name: "gcr.io/cloud-builders/gsutil"
     entrypoint: "bash"
     args:
@@ -7,13 +7,25 @@ steps:
       - |
         echo "Copying .env from bucket to workspace..."
         gsutil cp gs://projekakhir/.env /workspace/.env
-        # Membaca file .env dan menyiapkan string untuk --set-env-vars
-        echo "Reading environment variables from .env file..."
-        ENV_VARS=$(grep -v '^#' /workspace/.env | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
+        echo "Converting .env to YAML format..."
+        # Buat file YAML untuk environment variables
+        cat > /workspace/env.yaml << EOF
+        env_variables:
+        EOF
+        # Tambahkan setiap variabel dari .env ke YAML
+        while IFS='=' read -r key value; do
+          # Skip empty lines and comments
+          [[ -z "$key" || "$key" =~ ^# ]] && continue
+          # Remove any leading/trailing whitespace
+          key=$(echo "$key" | xargs)
+          value=$(echo "$value" | xargs)
+          # Skip PORT as it's managed by Cloud Run
+          [[ "$key" == "PORT" ]] && continue
+          # Add to YAML file
+          echo "  $key: \"$value\"" >> /workspace/env.yaml
+        done < /workspace/.env
         echo "Environment variables prepared (without sensitive values):"
-        echo "$ENV_VARS" | sed 's/DB_PASSWORD=[^,]*/DB_PASSWORD=****/g'
-        # Simpan ke file untuk digunakan di step berikutnya
-        echo "$ENV_VARS" > /workspace/env_vars.txt
+        cat /workspace/env.yaml | sed 's/DB_PASSWORD: "[^"]*"/DB_PASSWORD: "****"/g'
 
   # Membuat image dengan perintah "cloud build -t gcr.io/$PROJECT_ID/projek-akhir ."
   # Project ID akan secara otomatis terisi ketika melakukan deploy di project yg dipilih
@@ -47,23 +59,23 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/projek-akhir"]
 
-  # Melakukan deploy ke cloud run dengan environment variables dari file
+  # Melakukan deploy ke cloud run dengan environment variables dari file YAML
   - name: "gcr.io/cloud-builders/gcloud"
-    entrypoint: "bash"
     args:
-      - "-c"
-      - |
-        # Baca environment variables dari file
-        ENV_VARS=$(cat /workspace/env_vars.txt)
-        echo "Deploying with environment variables (without sensitive values)..."
-        echo "$ENV_VARS" | sed 's/DB_PASSWORD=[^,]*/DB_PASSWORD=****/g'
-        gcloud run deploy projek-akhir \
-          --image gcr.io/$PROJECT_ID/projek-akhir \
-          --timeout 360s \
-          --port 5001 \
-          --region us-central1 \
-          --allow-unauthenticated \
-          --set-env-vars "$ENV_VARS"
+      - "run"
+      - "deploy"
+      - "projek-akhir"
+      - "--image"
+      - "gcr.io/$PROJECT_ID/projek-akhir"
+      - "--timeout"
+      - "360s"
+      - "--port"
+      - "5001"
+      - "--region"
+      - "us-central1"
+      - "--allow-unauthenticated"
+      - "--env-vars-file"
+      - "/workspace/env.yaml"
 
 # Log hanya akan disimpan di Google Cloud Logging
 # Log tidak akan disimpan di Google Cloud Storage (butuh hak akses).
