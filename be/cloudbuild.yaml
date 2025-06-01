@@ -8,25 +8,27 @@ steps:
         echo "📥 Mengambil .env dari Cloud Storage..."
         gsutil cp gs://projekakhir/.env /workspace/.env
 
-        echo "🔄 Mengubah .env ke YAML format..."
+        echo "🔄 Membuat YAML environment variables..."
         echo "env_variables:" > /workspace/env.yaml
 
-        while IFS='=' read -r line; do
-          # Lewati baris kosong dan komentar
-          [[ -z "$line" || "$line" == \#* ]] && continue
+        # Konversi .env ke YAML tanpa spasi/kutip
+        while IFS='=' read -r key value; do
+          # Skip baris kosong dan komentar
+          [[ -z "$key" || "$key" == \#* ]] && continue
 
-          # Pisahkan key dan value menggunakan awk, sekaligus trim spasi dan kutip
-          key=$(echo "$line" | awk -F '=' '{gsub(/^[ \t"]+|[ \t"]+$/, "", $1); print $1}')
-          value=$(echo "$line" | awk -F '=' '{gsub(/^[ \t"]+|[ \t"]+$/, "", $2); print $2}')
+          # Bersihkan key dan value (tanpa kutip)
+          key=$(echo "$key" | sed 's/^[ \t]*//;s/[ \t]*$//')
+          value=$(echo "$value" | sed 's/^[ \t"]*//;s/[ \t"]*$//')
 
+          # Skip PORT jika ada
           [[ "$key" == "PORT" ]] && continue
 
           echo "  $key: \"$value\"" >> /workspace/env.yaml
         done < /workspace/.env
 
+        echo -e "\n✅ Isi final env.yaml:"
+        cat /workspace/env.yaml | sed 's/DB_PASSWORD: ".*/DB_PASSWORD: "****"/g'
 
-        echo -e "\n✅ YAML akhir (disensor untuk password):"
-        cat /workspace/env.yaml | sed 's/DB_PASSWORD: ".*"/DB_PASSWORD: "****"/g'
 
   # STEP 2: Build Docker image
   - name: "gcr.io/cloud-builders/docker"
