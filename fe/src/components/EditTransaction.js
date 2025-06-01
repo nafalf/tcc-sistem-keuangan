@@ -184,7 +184,7 @@ const EditTransaction = (props) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "amount") {
-      // Hapus semua karakter non-digit kecuali titik desimal
+      // Hanya terima angka dan titik desimal
       const cleanValue = value.replace(/[^\d.]/g, "");
       // Pastikan hanya ada satu titik desimal
       const parts = cleanValue.split(".");
@@ -194,7 +194,7 @@ const EditTransaction = (props) => {
       setAmountInput(formattedValue);
       setFormData((prev) => ({
         ...prev,
-        [name]: formattedValue,
+        [name]: formattedValue === "" ? "" : parseFloat(formattedValue),
       }));
     } else {
       setFormData((prev) => ({
@@ -212,7 +212,7 @@ const EditTransaction = (props) => {
     try {
       const transactionData = {
         ...formData,
-        amount: Math.round(parseFloat(amountInput) * 100) / 100,
+        amount: parseFloat(formData.amount), // Hapus pembulatan
       };
 
       const response = await makeAuthenticatedRequest((token) =>

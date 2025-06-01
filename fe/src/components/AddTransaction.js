@@ -74,7 +74,7 @@ const AddTransaction = ({ onTransactionAdded }) => {
       setAmountInput(formattedValue);
       setFormData((prev) => ({
         ...prev,
-        [name]: formattedValue,
+        [name]: formattedValue === "" ? "" : parseFloat(formattedValue),
       }));
     } else {
       setFormData((prev) => ({
@@ -98,7 +98,7 @@ const AddTransaction = ({ onTransactionAdded }) => {
 
       const transactionData = {
         ...formData,
-        amount: Math.round(parseFloat(formData.amount) * 100) / 100,
+        amount: parseFloat(formData.amount),
       };
 
       await axios.post(`${API_URL}/api/transaction`, transactionData, {
