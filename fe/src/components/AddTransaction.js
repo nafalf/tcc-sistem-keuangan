@@ -74,7 +74,7 @@ const AddTransaction = ({ onTransactionAdded }) => {
       setAmountInput(formattedValue);
       setFormData((prev) => ({
         ...prev,
-        [name]: formattedValue === "" ? "" : parseFloat(formattedValue),
+        [name]: formattedValue,
       }));
     } else {
       setFormData((prev) => ({
@@ -98,7 +98,7 @@ const AddTransaction = ({ onTransactionAdded }) => {
 
       const transactionData = {
         ...formData,
-        amount: parseFloat(formData.amount),
+        amount: Number(formData.amount),
       };
 
       await axios.post(`${API_URL}/api/transaction`, transactionData, {
@@ -149,26 +149,14 @@ const AddTransaction = ({ onTransactionAdded }) => {
         <div className="form-group">
           <label htmlFor="amount">Nominal (Rp)</label>
           <input
-            type="number"
+            type="text"
             id="amount"
             name="amount"
             value={amountInput}
             onChange={handleChange}
-            onBlur={(e) => {
-              const value = e.target.value;
-              if (value !== "") {
-                const formattedValue = parseFloat(value).toString();
-                setAmountInput(formattedValue);
-                setFormData((prev) => ({
-                  ...prev,
-                  amount: parseFloat(formattedValue),
-                }));
-              }
-            }}
             required
-            min="0"
-            step="0.01"
             placeholder="Masukkan nominal"
+            inputMode="decimal"
           />
         </div>
 

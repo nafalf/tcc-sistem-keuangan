@@ -194,7 +194,7 @@ const EditTransaction = (props) => {
       setAmountInput(formattedValue);
       setFormData((prev) => ({
         ...prev,
-        [name]: formattedValue === "" ? "" : parseFloat(formattedValue),
+        [name]: formattedValue, // Simpan sebagai string untuk menghindari konversi otomatis
       }));
     } else {
       setFormData((prev) => ({
@@ -212,7 +212,7 @@ const EditTransaction = (props) => {
     try {
       const transactionData = {
         ...formData,
-        amount: parseFloat(formData.amount), // Hapus pembulatan
+        amount: Number(formData.amount), // Gunakan Number() untuk konversi yang lebih aman
       };
 
       const response = await makeAuthenticatedRequest((token) =>
@@ -283,15 +283,14 @@ const EditTransaction = (props) => {
         <div className="form-group">
           <label htmlFor="amount">Nominal (Rp)</label>
           <input
-            type="number"
+            type="text"
             id="amount"
             name="amount"
             value={amountInput}
             onChange={handleChange}
             required
-            min="0"
-            step="0.01"
             placeholder="Masukkan nominal"
+            inputMode="decimal"
           />
         </div>
 
