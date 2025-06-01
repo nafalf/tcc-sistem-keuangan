@@ -12,11 +12,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #FFF9FE 0%, #ebddff 100%);
+  background: linear-gradient(180deg, #fff9fe 0%, #ebddff 100%);
 }
 
 /* Card form putih di tengah */
-.auth-card, .register-card {
+.auth-card,
+.register-card {
   background: #fff;
   border-radius: 24px;
   padding: 48px 40px 32px 40px;
@@ -30,7 +31,8 @@
   margin-bottom: 30px;
 }
 
-.auth-card h1, .register-card h1 {
+.auth-card h1,
+.register-card h1 {
   text-align: center;
   margin-bottom: 32px;
   font-size: 2.4rem;
@@ -72,7 +74,8 @@
   border-color: #a084e8;
 }
 
-.login-button-gradient, .register-button-gradient {
+.login-button-gradient,
+.register-button-gradient {
   width: 100%;
   padding: 15px 0;
   border: none;
@@ -85,25 +88,29 @@
   margin-bottom: 0.5rem;
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 12px 0 rgba(123,97,255,0.10);
+  box-shadow: 0 4px 12px 0 rgba(123, 97, 255, 0.1);
 }
-.login-button-gradient:hover, .register-button-gradient:hover {
+.login-button-gradient:hover,
+.register-button-gradient:hover {
   background: linear-gradient(90deg, #7b61ff 0%, #fd749b 100%);
 }
 
-.auth-footer, .register-footer {
+.auth-footer,
+.register-footer {
   text-align: center;
   margin-top: 1.5rem;
   color: #888;
   font-size: 1rem;
 }
-.auth-footer a, .register-footer a {
+.auth-footer a,
+.register-footer a {
   color: #7b61ff;
   font-weight: 500;
   text-decoration: none;
   margin-left: 0.2rem;
 }
-.auth-footer a:hover, .register-footer a:hover {
+.auth-footer a:hover,
+.register-footer a:hover {
   text-decoration: underline;
 }
 
@@ -116,11 +123,36 @@
   font-size: 0.98rem;
   text-align: center;
   width: 100%;
+  border: 1px solid #fecaca;
+}
+
+.field-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+.error-input {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+}
+
+.error-input:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1) !important;
+}
+
+.register-button-gradient:disabled {
+  background: #ccc !important;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 @media (max-width: 600px) {
-  .auth-card, .register-card {
+  .auth-card,
+  .register-card {
     padding: 24px 8px 16px 8px;
     max-width: 98vw;
   }
-} 
+}
