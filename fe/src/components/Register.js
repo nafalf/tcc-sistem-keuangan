@@ -4,6 +4,54 @@ import { useNavigate } from "react-router-dom";
 import config from "../config";
 import "./Auth.css";
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Register Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          className="auth-bg-gradient"
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            className="auth-card"
+            style={{ maxWidth: "500px", margin: "0 auto", textAlign: "center" }}
+          >
+            <h2>Terjadi kesalahan pada halaman register</h2>
+            <p>Silakan refresh halaman atau coba kembali nanti</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="register-button-gradient"
+              style={{ marginTop: "20px" }}
+            >
+              Refresh Halaman
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -285,39 +333,10 @@ const Register = () => {
   );
 };
 
-class RegisterErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+const RegisterWithErrorBoundary = () => (
+  <ErrorBoundary>
+    <Register />
+  </ErrorBoundary>
+);
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error("Register Error:", error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{ padding: "20px", textAlign: "center" }}>
-          <h2>Terjadi kesalahan pada halaman register</h2>
-          <p>Silakan refresh halaman atau coba kembali nanti</p>
-          <pre style={{ color: "red" }}>{this.state.error?.toString()}</pre>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-export default function RegisterWithErrorBoundary() {
-  return (
-    <RegisterErrorBoundary>
-      <Register />
-    </RegisterErrorBoundary>
-  );
-}
+export default RegisterWithErrorBoundary;
