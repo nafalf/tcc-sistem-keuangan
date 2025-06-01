@@ -7,6 +7,12 @@ import { getCookie } from "../utils/cookieUtils";
 
 const API_URL = config.API_URL;
 
+const getLocalToday = () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now;
+};
+
 const AddTransaction = ({ onTransactionAdded }) => {
   const [formData, setFormData] = useState({
     amount: "",
@@ -21,7 +27,7 @@ const AddTransaction = ({ onTransactionAdded }) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalToday();
 
   useEffect(() => {
     const token = getCookie("accessToken");
@@ -36,7 +42,10 @@ const AddTransaction = ({ onTransactionAdded }) => {
   }, []);
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, date: today }));
+    setFormData((prev) => ({
+      ...prev,
+      date: today.toISOString().split("T")[0],
+    }));
   }, []);
 
   const fetchCategories = async () => {
@@ -187,7 +196,7 @@ const AddTransaction = ({ onTransactionAdded }) => {
             value={formData.date}
             onChange={handleChange}
             required
-            max={today}
+            max={today.toISOString().split("T")[0]}
           />
         </div>
 

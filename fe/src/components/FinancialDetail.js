@@ -8,6 +8,12 @@ import Sidebar from "./Sidebar";
 
 const API_URL = config.API_URL;
 
+const getLocalToday = () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now;
+};
+
 const FinancialDetail = () => {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
@@ -18,7 +24,7 @@ const FinancialDetail = () => {
     totalIncome: 0,
     totalExpense: 0,
   });
-  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [selectedDate, setSelectedDate] = useState(() => getLocalToday());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -96,36 +102,18 @@ const FinancialDetail = () => {
   };
 
   const handleDateChange = (e) => {
-    const newDate = new Date(e.target.value);
-    const today = new Date();
-
-    // Validasi untuk memastikan tanggal tidak lebih besar dari hari ini
-    if (timeFilter === "day" && newDate > today) {
-      return;
-    }
-
-    // Validasi untuk bulan
+    let newDate;
     if (timeFilter === "month") {
-      const selectedMonth = new Date(
-        newDate.getFullYear(),
-        newDate.getMonth() + 1,
-        0
-      );
-      if (selectedMonth > today) {
-        return;
-      }
-    }
-
-    // Validasi untuk tahun
-    if (timeFilter === "year" && newDate.getFullYear() > today.getFullYear()) {
-      return;
-    }
-
-    if (timeFilter === "month") {
-      newDate.setDate(1);
+      // Format value: yyyy-mm
+      const [year, month] = e.target.value.split("-");
+      newDate = new Date(Number(year), Number(month) - 1, 1);
     } else if (timeFilter === "year") {
-      newDate.setMonth(0);
-      newDate.setDate(1);
+      newDate = new Date(Number(e.target.value), 0, 1);
+    } else {
+      // Format value: yyyy-mm-dd
+      newDate = new Date(e.target.value);
+      // Koreksi timezone agar sesuai lokal
+      newDate.setMinutes(newDate.getMinutes() + newDate.getTimezoneOffset());
     }
     setSelectedDate(newDate);
   };
@@ -175,7 +163,6 @@ const FinancialDetail = () => {
   };
 
   const getDateInputValue = () => {
-    const today = new Date();
     switch (timeFilter) {
       case "year":
         return selectedDate.getFullYear();
@@ -184,12 +171,16 @@ const FinancialDetail = () => {
           selectedDate.getMonth() + 1
         ).padStart(2, "0")}`;
       default:
-        return selectedDate.toISOString().split("T")[0];
+        // Format ke yyyy-mm-dd lokal
+        const local = new Date(
+          selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000
+        );
+        return local.toISOString().split("T")[0];
     }
   };
 
   const getMaxDate = () => {
-    const today = new Date();
+    const today = getLocalToday();
     switch (timeFilter) {
       case "year":
         return today.getFullYear().toString();
@@ -199,7 +190,10 @@ const FinancialDetail = () => {
           "0"
         )}`;
       default:
-        return today.toISOString().split("T")[0];
+        const local = new Date(
+          today.getTime() - today.getTimezoneOffset() * 60000
+        );
+        return local.toISOString().split("T")[0];
     }
   };
 
@@ -237,7 +231,9 @@ const FinancialDetail = () => {
               <div className="filter-row">
                 <div className="time-filter">
                   <button
-                    className={`filter-btn ${timeFilter === "day" ? "active" : ""}`}
+                    className={`filter-btn ${
+                      timeFilter === "day" ? "active" : ""
+                    }`}
                     onClick={() => handleTimeFilterChange("day")}
                   >
                     Harian
@@ -260,12 +256,19 @@ const FinancialDetail = () => {
                   </button>
                 </div>
                 <div className="date-picker">
-                  <input type={getDateInputType()} value={getDateInputValue()} onChange={handleDateChange} max={getMaxDate()} />
+                  <input
+                    type={getDateInputType()}
+                    value={getDateInputValue()}
+                    onChange={handleDateChange}
+                    max={getMaxDate()}
+                  />
                 </div>
               </div>
               <div className="type-filter">
                 <button
-                  className={`filter-btn ${typeFilter === "all" ? "active" : ""}`}
+                  className={`filter-btn ${
+                    typeFilter === "all" ? "active" : ""
+                  }`}
                   onClick={() => setTypeFilter("all")}
                 >
                   Semua
@@ -292,15 +295,35 @@ const FinancialDetail = () => {
               <div className="summary-row-horizontal">
                 <div className="summary-card income">
                   <h3>Total Pemasukan</h3>
-                  <p className="amount">Rp {summary.totalIncome.toLocaleString("id-ID")}</p>
+                  <p className="amount">
+                    Rp {summary.totalIncome.toLocaleString("id-ID")}
+                  </p>
                   <div className="period-placeholder"></div>
-                  <span className="summary-icon">{/* SVG hijau */}
-                    <svg width="60" height="32" viewBox="0 0 60 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M0 32V24C6 24 12 16 18 16C24 16 30 28 36 28C42 28 48 8 54 8C57 8 60 16 60 16V32H0Z" fill="url(#green)" fillOpacity="0.18"/>
+                  <span className="summary-icon">
+                    {/* SVG hijau */}
+                    <svg
+                      width="60"
+                      height="32"
+                      viewBox="0 0 60 32"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M0 32V24C6 24 12 16 18 16C24 16 30 28 36 28C42 28 48 8 54 8C57 8 60 16 60 16V32H0Z"
+                        fill="url(#green)"
+                        fillOpacity="0.18"
+                      />
                       <defs>
-                        <linearGradient id="green" x1="0" y1="0" x2="60" y2="32" gradientUnits="userSpaceOnUse">
-                          <stop stop-color="#00D1B2"/>
-                          <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                        <linearGradient
+                          id="green"
+                          x1="0"
+                          y1="0"
+                          x2="60"
+                          y2="32"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop stop-color="#00D1B2" />
+                          <stop offset="1" stop-color="#fff" stop-opacity="0" />
                         </linearGradient>
                       </defs>
                     </svg>
@@ -308,32 +331,103 @@ const FinancialDetail = () => {
                 </div>
                 <div className="summary-card total-balance">
                   <h3>Total Saldo</h3>
-                  <p className="amount">Rp {summary.totalBalance.toLocaleString("id-ID")}</p>
+                  <p className="amount">
+                    Rp {summary.totalBalance.toLocaleString("id-ID")}
+                  </p>
                   <div className="period-placeholder"></div>
-                  <span className="summary-icon">{/* SVG ungu */}
-                    <svg width="60" height="32" viewBox="0 0 60 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <span className="summary-icon">
+                    {/* SVG ungu */}
+                    <svg
+                      width="60"
+                      height="32"
+                      viewBox="0 0 60 32"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <g>
-                        <rect x="5" y="20" width="4" height="8" rx="2" fill="#C5C5C5"/>
-                        <rect x="13" y="16" width="4" height="12" rx="2" fill="#C5C5C5"/>
-                        <rect x="21" y="22" width="4" height="6" rx="2" fill="#C5C5C5"/>
-                        <rect x="29" y="18" width="4" height="10" rx="2" fill="#C5C5C5"/>
-                        <rect x="37" y="24" width="4" height="4" rx="2" fill="#C5C5C5"/>
-                        <rect x="45" y="12" width="4" height="16" rx="2" fill="#7B61FF"/>
+                        <rect
+                          x="5"
+                          y="20"
+                          width="4"
+                          height="8"
+                          rx="2"
+                          fill="#C5C5C5"
+                        />
+                        <rect
+                          x="13"
+                          y="16"
+                          width="4"
+                          height="12"
+                          rx="2"
+                          fill="#C5C5C5"
+                        />
+                        <rect
+                          x="21"
+                          y="22"
+                          width="4"
+                          height="6"
+                          rx="2"
+                          fill="#C5C5C5"
+                        />
+                        <rect
+                          x="29"
+                          y="18"
+                          width="4"
+                          height="10"
+                          rx="2"
+                          fill="#C5C5C5"
+                        />
+                        <rect
+                          x="37"
+                          y="24"
+                          width="4"
+                          height="4"
+                          rx="2"
+                          fill="#C5C5C5"
+                        />
+                        <rect
+                          x="45"
+                          y="12"
+                          width="4"
+                          height="16"
+                          rx="2"
+                          fill="#7B61FF"
+                        />
                       </g>
                     </svg>
                   </span>
                 </div>
                 <div className="summary-card expense">
                   <h3>Total Pengeluaran</h3>
-                  <p className="amount">Rp {summary.totalExpense.toLocaleString("id-ID")}</p>
+                  <p className="amount">
+                    Rp {summary.totalExpense.toLocaleString("id-ID")}
+                  </p>
                   <div className="period-placeholder"></div>
-                  <span className="summary-icon">{/* SVG merah muda */}
-                    <svg width="60" height="32" viewBox="0 0 60 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M0 32V24C6 24 12 16 18 16C24 16 30 28 36 28C42 28 48 8 54 8C57 8 60 16 60 16V32H0Z" fill="url(#pink)" fillOpacity="0.18"/>
+                  <span className="summary-icon">
+                    {/* SVG merah muda */}
+                    <svg
+                      width="60"
+                      height="32"
+                      viewBox="0 0 60 32"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M0 32V24C6 24 12 16 18 16C24 16 30 28 36 28C42 28 48 8 54 8C57 8 60 16 60 16V32H0Z"
+                        fill="url(#pink)"
+                        fillOpacity="0.18"
+                      />
                       <defs>
-                        <linearGradient id="pink" x1="0" y1="0" x2="60" y2="32" gradientUnits="userSpaceOnUse">
-                          <stop stop-color="#FD749B"/>
-                          <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                        <linearGradient
+                          id="pink"
+                          x1="0"
+                          y1="0"
+                          x2="60"
+                          y2="32"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop stop-color="#FD749B" />
+                          <stop offset="1" stop-color="#fff" stop-opacity="0" />
                         </linearGradient>
                       </defs>
                     </svg>
@@ -364,7 +458,9 @@ const FinancialDetail = () => {
                         </div>
                         <div className="transaction-header">
                           <span className="transaction-date">
-                            {new Date(transaction.date).toLocaleDateString("id-ID")}
+                            {new Date(transaction.date).toLocaleDateString(
+                              "id-ID"
+                            )}
                           </span>
                         </div>
                         <div className="transaction-details">
@@ -384,15 +480,21 @@ const FinancialDetail = () => {
                             <span className="detail-label">Jumlah:</span>
                             <span className="detail-value amount">
                               Rp{" "}
-                              {Number(transaction.amount).toLocaleString("id-ID")}
+                              {Number(transaction.amount).toLocaleString(
+                                "id-ID"
+                              )}
                             </span>
                           </div>
                           <div className="detail-row">
                             <span className="detail-label">ID Transaksi:</span>
-                            <span className="detail-value">{transaction.id}</span>
+                            <span className="detail-value">
+                              {transaction.id}
+                            </span>
                           </div>
                           <div className="detail-row">
-                            <span className="detail-label">Tanggal Dibuat:</span>
+                            <span className="detail-label">
+                              Tanggal Dibuat:
+                            </span>
                             <span className="detail-value">
                               {formatDateTime(transaction.created_at)}
                             </span>
