@@ -3,14 +3,31 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import UserRoute from "./route/UserRoute.js";
 import TransactionRoute from "./route/TransactionRoute.js";
 import CategoryRoute from "./route/CategoryRoute.js";
 import PlanRoute from "./route/PlanRoute.js";
 import { syncDatabase } from "./config/db.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-dotenv.config();
+
+// Logging untuk debugging
+console.log("Current directory:", process.cwd());
+console.log("__dirname:", __dirname);
+console.log(".env file path:", path.resolve(process.cwd(), ".env"));
+
+// Load environment variables
+const result = dotenv.config();
+if (result.error) {
+  console.error("Error loading .env file:", result.error);
+} else {
+  console.log(".env file loaded successfully");
+}
 
 // Log environment variables (tanpa password)
 console.log("Environment Variables:");
