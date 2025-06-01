@@ -50,40 +50,29 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/projek-akhir"]
 
-  # Melakukan deploy ke cloud run menggunakan image yg telah di-upload/push pada langkah sebelumnya
-  # Pada bagian ini, dijalankan perintah sebagai berikut.
-  # "gcloud run deploy projek-akhir \
-  #       --image 'gcr.io/$PROJECT_ID/projek-akhir \
-  #       --timeout 360s \
-  #       --port 5001 \
-  #       --region us-central1 \
-  #       --allow-unauthenticated' \
-  #
-  # Keterangan:
-  # "gcloud run deploy be": Perintah yang digunakan untuk mendeploy service ke cloud run dengan nama "be"
-  # "--image 'gcr.io/$PROJECT_ID/projek-akhir'": Image yang akan di-deploy
-  # "--timeout 1000s": Mengatur waktu maksimum loading menjadi 1000s
-  # "--port 5001": Mengatur port yang akan digunakan (disamakan dengan port yg di-listen oleh server)
-  # "--region us-central1": Memilih us-central1 sebagai region yg akan digunakan pada cloud run
-  # "--allow-unauthenticated": Agar BE dapat diakses di mana saja tanpa memerlukan autentikasi
+  # Membaca environment variables dari file .env
   - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
     args:
-      [
-        "run",
-        "deploy",
-        "projek-akhir",
-        "--image",
-        "gcr.io/$PROJECT_ID/projek-akhir",
-        "--timeout",
-        "360s",
-        "--port",
-        "5001",
-        "--region",
-        "us-central1",
-        "--allow-unauthenticated",
-        "--set-env-vars",
-        "ACCESS_TOKEN_SECRET=${_ACCESS_TOKEN_SECRET},REFRESH_TOKEN_SECRET=${_REFRESH_TOKEN_SECRET},DB_HOST=${_DB_HOST},DB_NAME=${_DB_NAME},DB_PASSWORD=${_DB_PASSWORD},DB_USERNAME=${_DB_USERNAME}",
-      ]
+      - "-c"
+      - |
+        echo "Reading environment variables from .env file..."
+        export DB_HOST=$(grep DB_HOST be/.env | cut -d '=' -f2)
+        export DB_NAME=$(grep DB_NAME be/.env | cut -d '=' -f2)
+        export DB_USERNAME=$(grep DB_USERNAME be/.env | cut -d '=' -f2)
+        export DB_PASSWORD=$(grep DB_PASSWORD be/.env | cut -d '=' -f2)
+        export ACCESS_TOKEN_SECRET=$(grep ACCESS_TOKEN_SECRET be/.env | cut -d '=' -f2)
+        export REFRESH_TOKEN_SECRET=$(grep REFRESH_TOKEN_SECRET be/.env | cut -d '=' -f2)
+        export PORT=$(grep PORT be/.env | cut -d '=' -f2)
+
+        echo "Deploying to Cloud Run with environment variables..."
+        gcloud run deploy projek-akhir \
+          --image gcr.io/$PROJECT_ID/projek-akhir \
+          --timeout 360s \
+          --port 5001 \
+          --region us-central1 \
+          --allow-unauthenticated \
+          --set-env-vars "DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_USERNAME=$DB_USERNAME,DB_PASSWORD=$DB_PASSWORD,ACCESS_TOKEN_SECRET=$ACCESS_TOKEN_SECRET,REFRESH_TOKEN_SECRET=$REFRESH_TOKEN_SECRET,PORT=$PORT"
 
 # Log hanya akan disimpan di Google Cloud Logging
 # Log tidak akan disimpan di Google Cloud Storage (butuh hak akses).
