@@ -3,14 +3,20 @@ service: "fe-projek-akhir"
 instance_class: F1
 
 handlers:
-  # Untuk file static seperti JS, CSS, gambar, dll.
-  - url: /(.*\.(js|css|png|jpg|ico|svg|json|woff2?))
-    static_files: build/\1
-    upload: build/.*\.(js|css|png|jpg|ico|svg|json|woff2?)
+  # Serve static files
+  - url: /static/(.*)
+    static_files: build/static/\1
+    upload: build/static/.*
+    secure: always
 
-  # Untuk route lainnya (SPA), arahkan ke index.html
+  # Serve other static files (favicon, manifest, etc)
+  - url: /(.*\.(ico|png|jpg|json|txt|woff2?))
+    static_files: build/\1
+    upload: build/.*\.(ico|png|jpg|json|txt|woff2?)
+    secure: always
+
+  # Serve index.html for all other routes
   - url: /.*
     static_files: build/index.html
     upload: build/index.html
-
-default_expiration: "1h"
+    secure: always
