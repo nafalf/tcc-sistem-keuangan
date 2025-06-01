@@ -51,7 +51,7 @@ steps:
       - "us-central1"
       - "--allow-unauthenticated"
       - "--set-env-vars"
-      - "DB_HOST=34.68.85.93,DB_USERNAME=root,DB_PASSWORD=pwnya112358,DB_NAME=moneytracker,ACCESS_TOKEN_SECRET=rahasia123,REFRESH_TOKEN_SECRET=rahasia456,PORT=5001"
+      - "DB_HOST=34.68.85.93,DB_USERNAME=root,DB_PASSWORD=pwnya112358,DB_NAME=moneytracker,ACCESS_TOKEN_SECRET=rahasia123,REFRESH_TOKEN_SECRET=rahasia456"
 
 # Log hanya akan disimpan di Google Cloud Logging
 # Log tidak akan disimpan di Google Cloud Storage (butuh hak akses).
