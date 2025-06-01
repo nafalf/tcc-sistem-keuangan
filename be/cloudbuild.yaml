@@ -13,17 +13,14 @@ steps:
         env_variables:
         EOF
         # Tambahkan setiap variabel dari .env ke YAML
-        while IFS='=' read -r key value; do
-          # Skip empty lines and comments
-          [[ -z "$key" || "$key" =~ ^# ]] && continue
-          # Remove any leading/trailing whitespace
-          key=$(echo "$key" | xargs)
-          value=$(echo "$value" | xargs)
-          # Skip PORT as it's managed by Cloud Run
+        while IFS='=' read -r line; do
+          [[ -z "$line" || "$line" == \#* ]] && continue
+          key=$(echo "$line" | cut -d '=' -f 1 | xargs)
+          value=$(echo "$line" | cut -d '=' -f 2- | xargs)
           [[ "$key" == "PORT" ]] && continue
-          # Add to YAML file
           echo "  $key: \"$value\"" >> /workspace/env.yaml
         done < /workspace/.env
+
         echo "Environment variables prepared (without sensitive values):"
         cat /workspace/env.yaml | sed 's/DB_PASSWORD: "[^"]*"/DB_PASSWORD: "****"/g'
 
