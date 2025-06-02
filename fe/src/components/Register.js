@@ -188,7 +188,7 @@ const Register = () => {
           setErrors({
             submit:
               serverError.msg ||
-              `Terjadi kesalahan saat registrasi (${err.response.status})`,
+              `Email sudah terdaftar! (${err.response.status})`,
           });
         }
       } else if (err.request) {
