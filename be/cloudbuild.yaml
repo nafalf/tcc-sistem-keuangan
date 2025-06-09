@@ -24,7 +24,7 @@ steps:
         "--timeout",
         "360s",
         "--port",
-        "5001",
+        "5005",
         "--region",
         "us-central1",
         "--allow-unauthenticated",
