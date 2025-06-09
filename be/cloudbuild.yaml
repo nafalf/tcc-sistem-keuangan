@@ -5,12 +5,12 @@ steps:
 
   # Step 2: Build Docker image
   - name: "gcr.io/cloud-builders/docker"
-    args: ["build", "-t", "gcr.io/$PROJECT_ID/projek-akhir", "."]
+    args: ["build", "-t", "gcr.io/$PROJECT_ID/projek-akhir-tcc", "."]
     dir: "be"
 
   # Step 3: Push image ke Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "gcr.io/$PROJECT_ID/projek-akhir"]
+    args: ["push", "gcr.io/$PROJECT_ID/projek-akhir-tcc"]
 
   # Step 4: Deploy ke Cloud Run menggunakan env.yaml
   - name: "gcr.io/cloud-builders/gcloud"
@@ -18,9 +18,9 @@ steps:
       [
         "run",
         "deploy",
-        "projek-akhir",
+        "projek-akhir-tcc",
         "--image",
-        "gcr.io/$PROJECT_ID/projek-akhir",
+        "gcr.io/$PROJECT_ID/projek-akhir-tcc",
         "--timeout",
         "360s",
         "--port",
