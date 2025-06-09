@@ -1,9 +1,5 @@
 import Transaction from "../model/Transaction.js";
 import Category from "../model/Category.js";
-import {
-  getPlanByCategoryAndUser,
-  updateRemainingAmount,
-} from "../model/PlanModel.js";
 import { Op } from "sequelize";
 import { PlanController } from "./PlanController.js";
 

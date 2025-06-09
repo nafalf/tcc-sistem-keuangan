@@ -1,9 +1,11 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/database.js";
-import User from "./User.js";
-import Category from "./Category.js";
+// model/Plan.js
 
-const Plan = sequelize.define(
+import { DataTypes } from "sequelize";
+// Perbaikan: Impor 'sequelize_mysql' secara spesifik menggunakan {}
+import { sequelize_mysql } from "../config/database.js";
+
+// Perbaikan: Gunakan 'sequelize_mysql' untuk mendefinisikan model
+const Plan = sequelize_mysql.define(
   "Plan",
   {
     id: {
@@ -14,18 +16,10 @@ const Plan = sequelize.define(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: User,
-        key: "id",
-      },
     },
     categoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: Category,
-        key: "id",
-      },
     },
     amount: {
       type: DataTypes.DECIMAL(10, 2),
@@ -39,25 +33,11 @@ const Plan = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: "createdAt",
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: "updatedAt",
-    },
   },
   {
     tableName: "plans",
     timestamps: true,
   }
 );
-
-// Define associations
-Plan.belongsTo(User, { foreignKey: "userId" });
-Plan.belongsTo(Category, { foreignKey: "categoryId" });
 
 export default Plan;

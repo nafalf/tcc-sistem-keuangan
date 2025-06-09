@@ -1,8 +1,9 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/database.js";
-import User from "./User.js";
+// model/Category.js
 
-const Category = sequelize.define(
+import { DataTypes } from "sequelize";
+import { sequelize_mysql } from "../config/database.js";
+
+const Category = sequelize_mysql.define(
   "Category",
   {
     id: {
@@ -17,10 +18,12 @@ const Category = sequelize.define(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      }
+    },
+    jenis: {
+      type: DataTypes.ENUM('pemasukan', 'pengeluaran'),
+    },
+    deskripsi: {
+      type: DataTypes.STRING,
     }
   },
   {
@@ -30,9 +33,5 @@ const Category = sequelize.define(
     updatedAt: false,
   }
 );
-
-// Set up association
-Category.belongsTo(User, { foreignKey: 'userId' });
-User.hasMany(Category, { foreignKey: 'userId' });
 
 export default Category;

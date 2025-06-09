@@ -1,7 +1,11 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/database.js";
+// model/User.js
 
-const User = sequelize.define(
+import { DataTypes } from "sequelize";
+// Perbaikan: Impor 'sequelize_pg' secara spesifik menggunakan {}
+import { sequelize_pg } from "../config/database.js"; 
+
+// Perbaikan: Gunakan 'sequelize_pg' untuk mendefinisikan model User
+const User = sequelize_pg.define(
   "User",
   {
     id: {

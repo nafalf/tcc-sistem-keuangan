@@ -1,9 +1,9 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/database.js";
-import User from "./User.js";
-import Category from "./Category.js";
+// model/Transaction.js
 
-const Transaction = sequelize.define(
+import { DataTypes } from "sequelize"; // Perbaikan 1
+import { sequelize_mysql } from "../config/database.js"; // Perbaikan 2
+
+const Transaction = sequelize_mysql.define(
   "Transaction",
   {
     id: {
@@ -27,21 +27,15 @@ const Transaction = sequelize.define(
       type: DataTypes.ENUM("income", "expense"),
       allowNull: false,
     },
+    // Perbaikan 3: 'references' ke User dihapus
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: User,
-        key: "id",
-      },
     },
+    // Perbaikan 3: 'references' ke Category dihapus
     categoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: Category,
-        key: "id",
-      },
     },
   },
   {
@@ -52,8 +46,6 @@ const Transaction = sequelize.define(
   }
 );
 
-// Define associations
-Transaction.belongsTo(User, { foreignKey: "userId" });
-Transaction.belongsTo(Category, { foreignKey: "categoryId" });
+// Perbaikan 4: Tidak ada asosiasi di sini
 
 export default Transaction;
